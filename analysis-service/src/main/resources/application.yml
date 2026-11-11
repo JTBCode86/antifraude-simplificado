@@ -17,6 +17,11 @@ spring:
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
@@ -31,3 +36,5 @@ app:
     exchange: transactions.exchange
     queue: transactions.queue
     routing-key: transactions.received
+  kafka:
+    topic: analysis.completed
