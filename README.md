@@ -6,13 +6,13 @@ Projeto didático individual para demonstrar dois serviços Spring Boot, bancos 
 
 ```mermaid
 flowchart LR
-    Cliente -->|POST /api/transacoes| T[Serviço de Transações]
-    T --> DB1[(PostgreSQL: transações)]
-    T -->|TransacaoRecebida| Q[RabbitMQ]
-    Q --> A[Serviço de Análise]
-    A --> DB2[(PostgreSQL: análises)]
-    Cliente -->|GET /api/analises/:id| A
-    A --> C[(Redis: resultados por 5 min)]
+    Cliente["Cliente"] -->|"POST transacoes"| T["Servico de Transacoes"]
+    T --> DB1["Banco de transacoes (PostgreSQL)"]
+    T -->|"TransacaoRecebida"| Q["RabbitMQ"]
+    Q --> A["Servico de Analise"]
+    A --> DB2["Banco de analises (PostgreSQL)"]
+    Cliente -->|"Consultar analise por ID"| A
+    A --> C["Cache Redis (5 min)"]
 ```
 
 Cada serviço é dono do seu banco. O Serviço de Transações grava e publica um evento; o Serviço de Análise consome a fila e grava o resultado. O consumidor usa o ID da transação como chave única, então uma entrega repetida não cria outra análise. A entrega é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
