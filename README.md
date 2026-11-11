@@ -11,7 +11,7 @@ flowchart LR
     T -->|TransacaoRecebida| Q[RabbitMQ]
     Q --> A[Serviço de Análise]
     A --> DB2[(PostgreSQL: análises)]
-    Cliente -->|GET /api/analises/{id}| A
+    Cliente -->|GET /api/analises/:id| A
     A --> C[(Redis: resultados por 5 min)]
 ```
 
