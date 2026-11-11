@@ -44,6 +44,22 @@ Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 | Banco de transações | localhost:5433 |
 | Banco de análises | localhost:5434 |
 
+## Testes automatizados
+
+Os testes unitários usam JUnit 5 e Mockito e cobrem a criação/publicação de transações, a regra didática de análise, a idempotência e a consulta de resultados. O build Docker executa esses testes antes de empacotar cada serviço.
+
+Para executá-los sem instalar Java ou Maven na máquina, abra o PowerShell na pasta do projeto:
+
+```powershell
+docker run --rm `
+  --mount "type=bind,source=$($PWD.Path),target=/workspace" `
+  --workdir /workspace `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn -B test
+```
+
+Uma saída com `BUILD SUCCESS` e `Tests run: 7, Failures: 0, Errors: 0` indica que os testes passaram.
+
 Crie uma transação:
 
 ```powershell
