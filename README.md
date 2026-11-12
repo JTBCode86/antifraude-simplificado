@@ -4,6 +4,8 @@ Projeto didático individual para demonstrar dois serviços Spring Boot, bancos 
 
 ## Arquitetura
 
+Diagrama editável do draw.io: [docs/arquitetura-antifraude.drawio](docs/arquitetura-antifraude.drawio).
+
 ```mermaid
 flowchart LR
     Cliente["Cliente"] -->|"POST transacoes"| T["Servico de Transacoes"]

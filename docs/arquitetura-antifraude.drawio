@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net" modified="2026-11-12T00:00:00.000Z" agent="Copilot" version="24.7.17" type="device">
+  <diagram id="antifraude-architecture" name="Arquitetura antifraude">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Antifraude simplificado — arquitetura de microserviços" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+          <mxGeometry x="280" y="10" width="1040" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="&lt;b&gt;Cliente / sistema externo&lt;/b&gt;&lt;br&gt;Consome as APIs REST" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#6B7280;fontSize=15;align=center;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="90" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="transaction-service" value="&lt;b&gt;Serviço de Transações&lt;/b&gt;&lt;br&gt;Spring Boot · porta 8081&lt;br&gt;POST /api/transacoes&lt;br&gt;Persiste e publica TransacaoRecebida" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;align=center;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="180" y="260" width="330" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="analysis-service" value="&lt;b&gt;Serviço de Análise&lt;/b&gt;&lt;br&gt;Spring Boot · porta 8082&lt;br&gt;Consome transações e aplica a regra didática&lt;br&gt;GET /api/analises/{id}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;align=center;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="760" y="260" width="350" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="rabbitmq" value="&lt;b&gt;RabbitMQ&lt;/b&gt;&lt;br&gt;Exchange: transactions.exchange&lt;br&gt;Fila: transactions.queue&lt;br&gt;Entrega pelo menos uma vez" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;align=center;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="450" y="500" width="280" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="transaction-db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;Banco do Serviço de Transações&lt;br&gt;Porta local: 5433" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=14;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="170" y="510" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="analysis-db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;Banco do Serviço de Análise&lt;br&gt;Porta local: 5434" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=14;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="510" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="redis" value="&lt;b&gt;Redis&lt;/b&gt;&lt;br&gt;Cache de análises encontradas&lt;br&gt;TTL: 5 minutos&lt;br&gt;Ausências não são armazenadas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=14;align=center;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="500" width="270" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka" value="&lt;b&gt;Apache Kafka&lt;/b&gt;&lt;br&gt;Tópico: analysis.completed&lt;br&gt;Evento: AnalysisCompleted&lt;br&gt;Chave: ID da transação" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=14;align=center;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="270" width="260" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="future-consumers" value="&lt;b&gt;Consumidores futuros (opcional)&lt;/b&gt;&lt;br&gt;Ex.: auditoria ou relatórios&lt;br&gt;Não implementados neste projeto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;dashed=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="690" width="260" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="client-post" value="POST /api/transacoes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="client" target="transaction-service">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="520" y="210" />
+              <mxPoint x="345" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="client-get" value="GET /api/analises/{id}" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="client" target="analysis-service">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="935" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="transaction-save" value="Grava transação" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#5B8C5A;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="transaction-service" target="transaction-db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transaction-publish" value="Publica TransacaoRecebida&lt;br&gt;transactions.received" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="transaction-service" target="rabbitmq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="analysis-consume" value="Consome transação&lt;br&gt;processamento idempotente por ID" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="rabbitmq" target="analysis-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="analysis-save" value="Grava uma análise por transação" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#5B8C5A;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="analysis-service" target="analysis-db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cache-access" value="Leitura / gravação do cache&lt;br&gt;após resultado encontrado" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="analysis-service" target="redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka-publish" value="Publica após commit&lt;br&gt;somente para nova análise" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="analysis-service" target="kafka">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka-consume" value="Assinatura do tópico&lt;br&gt;(evolução futura)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="kafka" target="future-consumers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="&lt;b&gt;Limites de responsabilidade&lt;/b&gt;&lt;br&gt;Cada serviço acessa somente o próprio banco.&lt;br&gt;RabbitMQ distribui o trabalho de análise; Kafka publica o fluxo de resultados." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=13;align=left;verticalAlign=middle;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="170" y="700" width="720" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
