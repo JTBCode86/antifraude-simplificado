@@ -84,7 +84,7 @@ Exemplo após a análise:
 
 ### Painel web
 
-Abra [http://localhost:8081](http://localhost:8081) com o Docker Compose em execução. O painel permite criar transações, buscar por estabelecimento ou ID e acompanhar os estados e resultados; a lista é atualizada automaticamente a cada quatro segundos.
+Abra [http://localhost:8081](http://localhost:8081) com o Docker Compose em execução. O painel permite criar transações, buscar por estabelecimento ou ID, acompanhar estados/resultados e visualizar gráficos de distribuição por status e volume por intervalos nas últimas 24 horas. A lista e os gráficos são atualizados automaticamente a cada quatro segundos e representam as 100 transações mais recentes.
 
 ## Estrutura de pastas
 

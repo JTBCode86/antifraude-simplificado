@@ -121,6 +121,66 @@ function updateMetrics(transactions) {
     String(analyzed.filter((item) => item.analysisStatus === "APPROVED").length);
   document.querySelector("#metric-review").textContent =
     String(analyzed.filter((item) => item.analysisStatus === "REVIEW").length);
+  updateCharts(transactions);
+}
+
+function updateCharts(transactions) {
+  const approved = transactions.filter((item) => item.analysisStatus === "APPROVED").length;
+  const review = transactions.filter((item) => item.analysisStatus === "REVIEW").length;
+  const pending = transactions.filter((item) => item.status !== "ANALYZED").length;
+  const total = transactions.length;
+  const segments = [
+    { key: "approved", count: approved, color: "var(--chart-approved)" },
+    { key: "review", count: review, color: "var(--chart-review)" },
+    { key: "pending", count: pending, color: "var(--chart-pending)" }
+  ];
+  let start = 0;
+  const stops = segments.map((segment) => {
+    const end = start + (total ? segment.count / total * 100 : 0);
+    const stop = `${segment.color} ${start}% ${end}%`;
+    start = end;
+    return stop;
+  });
+  const statusChart = document.querySelector("#status-chart");
+  statusChart.style.background = total
+    ? `conic-gradient(${stops.join(", ")})`
+    : "conic-gradient(#e9edf3 0% 100%)";
+  statusChart.setAttribute(
+    "aria-label",
+    `Distribuição das últimas ${total} transações: ${approved} aprovadas, ${review} em revisão e ${pending} em processamento.`
+  );
+  document.querySelector("#status-chart-total").textContent = String(total);
+
+  for (const segment of segments) {
+    const percentage = total ? Math.round(segment.count / total * 100) : 0;
+    document.querySelector(`#chart-${segment.key}`).textContent = `${segment.count} · ${percentage}%`;
+  }
+
+  const bucketCounts = Array(6).fill(0);
+  const now = Date.now();
+  const fourHours = 4 * 60 * 60 * 1000;
+  for (const transaction of transactions) {
+    const createdAt = new Date(transaction.createdAt).getTime();
+    const age = now - createdAt;
+    if (Number.isFinite(createdAt) && age >= 0 && age < 24 * 60 * 60 * 1000) {
+      bucketCounts[Math.floor(age / fourHours)] += 1;
+    }
+  }
+
+  const maximum = Math.max(1, ...bucketCounts);
+  const columns = document.querySelectorAll(".bar-column");
+  bucketCounts.forEach((count, index) => {
+    const column = columns[index];
+    column.querySelector(".bar-count").textContent = String(count);
+    column.querySelector(".bar-fill").style.height = `${count ? Math.max(8, count / maximum * 132) : 3}px`;
+  });
+  const inLast24Hours = bucketCounts.reduce((sum, count) => sum + count, 0);
+  document.querySelector("#volume-summary").textContent =
+    `${inLast24Hours} ${inLast24Hours === 1 ? "transação" : "transações"} nas últimas 24 horas · dentro das 100 mais recentes.`;
+  document.querySelector("#volume-chart").setAttribute(
+    "aria-label",
+    `Volume das últimas 100 transações por intervalos de quatro horas nas últimas 24 horas: ${bucketCounts.join(", ")}.`
+  );
 }
 
 async function loadTransactions() {

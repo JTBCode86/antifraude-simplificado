@@ -73,7 +73,7 @@ Uma saída com `BUILD SUCCESS` e `Tests run: 11, Failures: 0, Errors: 0` indica 
 
 ### Painel de acompanhamento
 
-Com os serviços iniciados, abra [http://localhost:8081](http://localhost:8081) para criar transações e acompanhar as 100 mais recentes. A página atualiza automaticamente a cada quatro segundos e mostra o resultado `APPROVED` ou `REVIEW`. O endpoint `GET /api/transacoes` fornece os dados à interface; o endpoint individual de status também está disponível em `GET /api/transacoes/{id}/status`.
+Com os serviços iniciados, abra [http://localhost:8081](http://localhost:8081) para criar transações e acompanhar as 100 mais recentes. A página atualiza automaticamente a cada quatro segundos e mostra o resultado `APPROVED` ou `REVIEW`, um gráfico de distribuição dos estados e o volume por intervalos nas últimas 24 horas. O endpoint `GET /api/transacoes` fornece os dados à interface; o endpoint individual de status também está disponível em `GET /api/transacoes/{id}/status`.
 
 Crie uma transação:
 
@@ -149,14 +149,39 @@ Para apagar também os dados persistidos dos bancos (ação destrutiva):
 docker compose down -v
 ```
 
-## Decisões e escopo
+## Trade-offs e limitações atuais
+
+As escolhas abaixo privilegiam um projeto didático executável localmente; elas não representam uma configuração pronta para produção.
+
+| Escolha | Benefício | Custo ou limitação |
+|---|---|---|
+| Dois microserviços com bancos próprios | Responsabilidades e propriedade dos dados ficam claras. | Há mais componentes para iniciar e manter; a comunicação entre serviços é eventual, então a análise não fica disponível imediatamente. |
+| RabbitMQ para o trabalho e Kafka para os resultados | Cada broker demonstra um papel diferente no fluxo. | Operar dois brokers aumenta a complexidade. A gravação no PostgreSQL e a publicação do evento não são atômicas; uma falha pode deixar o evento pendente ou ausente. |
+| Entrega pelo menos uma vez e gravação idempotente | Reentregas do RabbitMQ não criam análises duplicadas. | O projeto ainda não configura políticas explícitas de retry com backoff nem DLQs para isolar mensagens que falham repetidamente. |
+| Cache Redis com TTL de cinco minutos | Consultas repetidas podem evitar leituras ao PostgreSQL. | Redis é uma dependência adicional; sem invalidação, um resultado pode ficar desatualizado até o TTL expirar. |
+| Painel com polling a cada quatro segundos | A interface é simples e acompanha o estado sem conexão persistente. | Há atraso entre atualizações e requisições periódicas. Tabela e gráficos usam somente as 100 transações mais recentes; o gráfico temporal as agrupa em intervalos de quatro horas. |
+| Docker Compose local, broker único e credenciais demonstrativas | Fácil de executar e reproduzir para a apresentação. | Não há alta disponibilidade, autenticação da API nem configuração de produção; não exponha o ambiente à internet. |
+
+## Próximos passos para evolução
+
+Em ordem sugerida:
+
+1. **Garantir publicação confiável de eventos:** implementar o padrão Outbox nos pontos de publicação de `TransactionReceived` e `AnalysisCompleted`, evitando divergência entre commits nos bancos e mensagens nos brokers.
+2. **Recuperar falhas de processamento:** configurar retry com backoff e Dead Letter Queues (DLQ), incluindo visibilidade e procedimento de reprocessamento de mensagens inválidas.
+3. **Evoluir listagem e gráficos:** adicionar paginação e filtros no endpoint de transações; mover as agregações dos gráficos para consultas no backend para que não fiquem limitadas às 100 transações recentes.
+4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados, correlação de IDs e testes de integração/contrato automatizados no pipeline.
+5. **Preparar para uso fora do ambiente local:** adicionar autenticação e autorização, gerir segredos fora do Compose, habilitar TLS, backups e redundância para bancos e brokers.
+
+Esses itens são propostas futuras, não recursos implementados atualmente.
+
+## Decisões arquiteturais (ADRs)
 
 - [ADR-001: divisão dos serviços e bancos](docs/adr/ADR-001-servicos-e-bancos.md)
 - [ADR-002: RabbitMQ, entrega e idempotência](docs/adr/ADR-002-fila-e-idempotencia.md)
 - [ADR-003: cache Redis](docs/adr/ADR-003-cache.md)
 - [ADR-004: tópico Kafka de resultados](docs/adr/ADR-004-topico-kafka.md)
 
-O perfil de execução deste projeto é **A (com Docker)**. Retry com backoff, DLQ, Outbox e teste de contrato são melhorias opcionais; não fazem parte do escopo inicial. A publicação no Kafka e a gravação no banco são duas operações separadas; Outbox seria o próximo passo para garantir que o evento publicado nunca fique divergente do resultado persistido.
+O perfil de execução deste projeto é **A (com Docker)**. Os ADRs registram o contexto, as alternativas e as consequências das decisões adotadas.
 
 ## Apresentação
 

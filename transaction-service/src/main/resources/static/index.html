@@ -70,6 +70,75 @@
       </ol>
     </section>
 
+    <section class="charts-grid" aria-label="Gráficos das transações recentes">
+      <article class="chart-card" aria-labelledby="status-chart-title">
+        <div class="chart-heading">
+          <div>
+            <p class="eyebrow">RESULTADOS</p>
+            <h2 id="status-chart-title">Distribuição por status</h2>
+          </div>
+          <span class="chart-period">Últimas 100</span>
+        </div>
+        <div class="status-chart-layout">
+          <div id="status-chart" class="status-donut" role="img" aria-label="Distribuição por status das transações recentes">
+            <div class="donut-center">
+              <strong id="status-chart-total">0</strong>
+              <span>transações</span>
+            </div>
+          </div>
+          <ul class="chart-legend">
+            <li><span class="legend-label"><i class="legend-dot dot-approved"></i>Aprovadas</span><strong id="chart-approved">0 · 0%</strong></li>
+            <li><span class="legend-label"><i class="legend-dot dot-review"></i>Em revisão</span><strong id="chart-review">0 · 0%</strong></li>
+            <li><span class="legend-label"><i class="legend-dot dot-pending"></i>Em processamento</span><strong id="chart-pending">0 · 0%</strong></li>
+          </ul>
+        </div>
+        <p class="chart-caption">Resumo das 100 transações mais recentes.</p>
+      </article>
+
+      <article class="chart-card" aria-labelledby="volume-chart-title">
+        <div class="chart-heading">
+          <div>
+            <p class="eyebrow">MOVIMENTAÇÃO</p>
+            <h2 id="volume-chart-title">Volume de transações</h2>
+          </div>
+          <span class="chart-period">Últimas 24 horas</span>
+        </div>
+        <div id="volume-chart" class="bar-chart" role="img" aria-label="Volume por intervalos nas últimas 24 horas">
+          <div class="bar-column" aria-hidden="true">
+            <span class="bar-count">0</span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">0–4h</span>
+          </div>
+          <div class="bar-column" aria-hidden="true">
+            <span class="bar-count">0</span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">4–8h</span>
+          </div>
+          <div class="bar-column" aria-hidden="true">
+            <span class="bar-count">0</span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">8–12h</span>
+          </div>
+          <div class="bar-column" aria-hidden="true">
+            <span class="bar-count">0</span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">12–16h</span>
+          </div>
+          <div class="bar-column" aria-hidden="true">
+            <span class="bar-count">0</span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">16–20h</span>
+          </div>
+          <div class="bar-column" aria-hidden="true">
+            <span class="bar-count">0</span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">20–24h</span>
+          </div>
+        </div>
+        <p id="volume-summary" class="chart-caption">0 transações nas últimas 24 horas.</p>
+      </article>
+    </section>
+
     <section class="workspace">
       <aside class="create-card">
         <div class="section-heading">
