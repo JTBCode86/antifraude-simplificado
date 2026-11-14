@@ -37,12 +37,12 @@
         <mxCell id="-hhX1_sWXsZ0bWvYe-da-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;dashed=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;" value="&lt;b&gt;Consumidores futuros (opcional)&lt;/b&gt;&lt;br&gt;Ex.: auditoria ou relatórios&lt;br&gt;Não implementados neste projeto" vertex="1">
           <mxGeometry height="100" width="260" x="1350" y="690" as="geometry" />
         </mxCell>
-        <mxCell id="browser-to-portal" edge="1" parent="1" source="browser-client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-2" value="HTTP :8080">
+        <mxCell id="browser-to-portal" edge="1" parent="1" source="browser-client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-2" value="">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="-hhX1_sWXsZ0bWvYe-da-11" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-3" value="REST (8081): transações e revisões&lt;br&gt;Actuator (8181): /actuator/health">
+        <mxCell id="-hhX1_sWXsZ0bWvYe-da-11" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-3" value="REST / saúde">
           <mxGeometry relative="1" x="0.3256" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -51,7 +51,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="-hhX1_sWXsZ0bWvYe-da-12" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-4" value="REST (8082): análises e idempotência&lt;br&gt;Actuator (8182): /actuator/health">
+        <mxCell id="-hhX1_sWXsZ0bWvYe-da-12" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-4" value="REST / saúde">
           <mxGeometry relative="1" x="-0.0638" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -59,17 +59,17 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="portal-health-rabbitmq" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-5" value="Health e demo de idempotência">
+        <mxCell id="portal-health-rabbitmq" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-5" value="Saúde / idempotência">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="portal-kafka-events" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-9" value="Eventos recentes e saúde do broker">
+        <mxCell id="portal-kafka-events" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-9" value="Eventos / saúde">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="portal-redis-health" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-8" value="Health e estado do cache">
+        <mxCell id="portal-redis-health" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-8" value="Saúde / cache">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -94,7 +94,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="-hhX1_sWXsZ0bWvYe-da-17" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=block;startFill=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-8" value="Consulta o cache; armazena resultados encontrados&lt;br&gt;(TTL: 5 min)">
+        <mxCell id="-hhX1_sWXsZ0bWvYe-da-17" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=block;startFill=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=13;labelBackgroundColor=#FFFFFF;" target="-hhX1_sWXsZ0bWvYe-da-8" value="Consulta / grava cache&lt;br&gt;TTL: 5 min">
           <mxGeometry relative="1" x="0.7895" y="-5" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -104,7 +104,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="analysis-status-consumer" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=13;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.25;entryX=1;entryY=0.25;exitPerimeter=1;entryPerimeter=1;" target="-hhX1_sWXsZ0bWvYe-da-3" value="Consome AnalysisCompleted&lt;br&gt;e atualiza o status">
+        <mxCell id="analysis-status-consumer" edge="1" parent="1" source="-hhX1_sWXsZ0bWvYe-da-9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=13;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.25;entryX=1;entryY=0.25;exitPerimeter=1;entryPerimeter=1;" target="-hhX1_sWXsZ0bWvYe-da-3" value="AnalysisCompleted&lt;br&gt;atualiza status">
           <mxGeometry relative="1" x="0.25" y="-15" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
