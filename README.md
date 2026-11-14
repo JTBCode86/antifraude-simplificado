@@ -6,13 +6,6 @@ Projeto didático individual para demonstrar dois serviços Spring Boot, bancos 
 
 **Diagrama editável:** [Abrir arquitetura no draw.io](docs/arquitetura-antifraude.drawio)
 
-### Microserviços
-
-| Microserviço | Responsabilidade | Documentação |
-|---|---|---|
-| **Transações** | Recebe e registra transações; publica eventos no RabbitMQ. | [Ver README](transaction-service/README.md) |
-| **Análise** | Analisa transações; consulta o Redis e publica resultados no Kafka. | [Ver README](analysis-service/README.md) |
-
 ```mermaid
 flowchart LR
     Cliente["Cliente"] -->|"POST transacoes"| T["Servico de Transacoes"]
@@ -26,6 +19,13 @@ flowchart LR
 ```
 
 Cada serviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. RabbitMQ distribui o trabalho para análise; Kafka fornece um fluxo de resultados para consumidores independentes. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
+
+## Microserviços
+
+| Microserviço | Responsabilidade | Documentação |
+|---|---|---|
+| **Transações** | Recebe e registra transações; publica eventos no RabbitMQ. | [Ver README](transaction-service/README.md) |
+| **Análise** | Analisa transações; consulta o Redis e publica resultados no Kafka. | [Ver README](analysis-service/README.md) |
 
 ## Requisitos
 
