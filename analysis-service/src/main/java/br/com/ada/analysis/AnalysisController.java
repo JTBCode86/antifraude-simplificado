@@ -25,4 +25,14 @@ public class AnalysisController {
         }
         return result;
     }
+
+    @GetMapping("/{transactionId}/idempotency-count")
+    public IdempotencyCountResponse countByTransactionId(@PathVariable UUID transactionId) {
+        return new IdempotencyCountResponse(
+                transactionId,
+                service.countByTransactionId(transactionId));
+    }
+
+    public record IdempotencyCountResponse(UUID transactionId, long count) {
+    }
 }

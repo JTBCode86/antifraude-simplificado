@@ -50,6 +50,12 @@ Exemplo de resposta:
 }
 ```
 
+### Consultar quantidade de análises por transação
+
+`GET /api/analises/{transactionId}/idempotency-count`
+
+Retorna quantos resultados estão persistidos para o ID, usado pelo teste guiado de idempotência no Portal BFF. Para uma mensagem repetida, o valor esperado é `1`.
+
 ## Estrutura de pastas
 
 ```text
@@ -88,6 +94,7 @@ analysis-service/
 - Spring Kafka para publicação do evento de análise.
 - Spring Cache e Redis para cache de consulta, com TTL de cinco minutos.
 - Porta HTTP: `8082`.
+- Porta interna de health checks: `8182` (não publicada no host pelo Compose).
 - Banco local no Compose: `analyses`, publicado na porta `5434`.
 - Tópico Kafka: `analysis.completed`, com uma partição e uma réplica no ambiente local.
 

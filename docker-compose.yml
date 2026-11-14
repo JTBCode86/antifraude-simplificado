@@ -132,6 +132,34 @@ services:
       kafka:
         condition: service_healthy
 
+  portal-service:
+    build:
+      context: .
+      dockerfile: portal-service/Dockerfile
+    environment:
+      TRANSACTION_API_URL: http://transaction-service:8081
+      TRANSACTION_MANAGEMENT_URL: http://transaction-service:8181
+      ANALYSIS_API_URL: http://analysis-service:8082
+      ANALYSIS_MANAGEMENT_URL: http://analysis-service:8182
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: app
+      SPRING_RABBITMQ_PASSWORD: app
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8080:8080"
+    depends_on:
+      transaction-service:
+        condition: service_started
+      analysis-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
 volumes:
   kafka-data:
   rabbitmq-data:

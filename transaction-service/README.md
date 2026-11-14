@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Receber solicitações de transação pela API, persistir cada uma no banco PostgreSQL que pertence a este serviço, publicar um evento no RabbitMQ para processamento assíncrono pelo Serviço de Análise e oferecer um painel web para acompanhar o fluxo.
+Receber solicitações de transação pela API, persistir cada uma no banco PostgreSQL que pertence a este serviço, publicar um evento no RabbitMQ para processamento assíncrono pelo Serviço de Análise e acompanhar resultados do Kafka. A interface web foi movida para o Portal BFF.
 
 Este serviço é responsável pela entrada e pelos dados originais da transação. Não acessa o banco do Serviço de Análise nem o Redis. Ele consome os eventos de análise concluída do Kafka para atualizar o estado local da transação.
 
@@ -10,15 +10,15 @@ Este serviço é responsável pela entrada e pelos dados originais da transaçã
 
 ```mermaid
 flowchart LR
-    Cliente["Cliente / Painel Web"] -->|"POST /api/transacoes"| API["TransactionController"]
+    Portal["Portal BFF"] -->|"POST /api/transacoes"| API["TransactionController"]
     API --> Service["TransactionService"]
     Service --> DB["PostgreSQL: transactions"]
     Service --> Publisher["TransactionPublisher"]
     Publisher -->|"transactions.exchange<br/>transactions.received"| Queue["RabbitMQ<br/>transactions.queue"]
     Kafka["Kafka<br/>analysis.completed"] --> StatusConsumer["AnalysisStatusConsumer"]
     StatusConsumer --> Service
-    Cliente -->|"GET /api/transacoes (painel)"| API
-    Cliente -->|"GET /api/transacoes/{id}/status"| API
+    Portal -->|"GET /api/transacoes"| API
+    Portal -->|"GET /api/transacoes/{id}/status"| API
 ```
 
 1. `POST /api/transacoes` recebe valor e estabelecimento; ambos são validados.
@@ -82,9 +82,25 @@ Exemplo após a análise:
 }
 ```
 
-### Painel web
+### Decidir análise manualmente
 
-Abra [http://localhost:8081](http://localhost:8081) com o Docker Compose em execução. O painel permite criar transações, buscar por estabelecimento ou ID, acompanhar estados/resultados e visualizar gráficos de distribuição por status e volume por intervalos nas últimas 24 horas. A lista e os gráficos são atualizados automaticamente a cada quatro segundos e representam as 100 transações mais recentes.
+`PUT /api/transacoes/{transactionId}/review-decision`
+
+Registra uma decisão manual `APPROVED` ou `REJECTED` somente quando a análise automática está `REVIEW` e ainda não há decisão anterior. O pedido exige `decision`, `reviewedBy` e `reason`. A decisão e sua justificativa são armazenadas separadamente; `analysisStatus` e `analysisReason` continuam representando o resultado automático. Retorna `404` para uma transação inexistente e `409` para estados que não podem ser revisados. A decisão é exposta pelo portal; esta API não tem autenticação.
+
+Exemplo de pedido:
+
+```json
+{
+  "decision": "APPROVED",
+  "reviewedBy": "Operador de demonstração",
+  "reason": "Informações verificadas"
+}
+```
+
+### Portal web
+
+Abra [http://localhost:8080](http://localhost:8080) para criar e acompanhar transações, pesquisar, visualizar gráficos, consultar saúde e operações e registrar decisões manuais de análise `REVIEW`. O Portal BFF serve a interface e agrega as APIs dos dois microserviços; os arquivos web não pertencem a este módulo.
 
 ## Estrutura de pastas
 
@@ -110,10 +126,6 @@ transaction-service/
     │   │   ├── TransactionStatusResponse.java
     │   │   └── TransactionService.java
     │   └── resources/
-    │       ├── static/
-    │       │   ├── app.js
-    │       │   ├── index.html
-    │       │   └── styles.css
     │       └── application.yml
     └── test/
         └── java/br/com/ada/transactions/
@@ -128,6 +140,8 @@ transaction-service/
 - Spring AMQP e RabbitMQ para publicação assíncrona.
 - Spring Kafka para consumir os eventos de análise concluída.
 - Porta HTTP: `8081`.
+- Porta interna de health checks: `8181` (não publicada no host pelo Compose).
+- Porta interna de health checks: `8181` (não publicada no host pelo Compose).
 - Banco local no Compose: `transactions`, publicado na porta `5433`.
 - Exchange, fila e routing key: `transactions.exchange`, `transactions.queue` e `transactions.received`.
 
@@ -135,4 +149,4 @@ Configurações padrão e variáveis de ambiente estão em `src/main/resources/a
 
 ## Testes
 
-`TransactionServiceTest` verifica a persistência/publicação de eventos, listagem e acompanhamento do resultado, além de assegurar que uma falha ao salvar impede a publicação. O build da imagem Docker executa os testes Maven antes de empacotar o serviço.
+`TransactionServiceTest` verifica persistência/publicação de eventos, listagem, acompanhamento do resultado e regras da decisão manual, além de assegurar que uma falha ao salvar impede a publicação. O build da imagem Docker executa os testes Maven antes de empacotar o serviço.

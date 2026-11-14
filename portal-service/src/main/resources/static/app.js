@@ -1,32 +1,27 @@
+const { formatDate, requestJson } = window.portalCommon;
 const form = document.querySelector("#transaction-form");
 const merchantInput = document.querySelector("#merchant");
 const amountInput = document.querySelector("#amount");
 const submitButton = document.querySelector("#submit-button");
 const formMessage = document.querySelector("#form-message");
 const refreshButton = document.querySelector("#refresh-button");
+const idempotencyButton = document.querySelector("#idempotency-button");
 const searchInput = document.querySelector("#search-input");
 const rowsContainer = document.querySelector("#transaction-rows");
 const emptyState = document.querySelector("#empty-state");
 const errorMessage = document.querySelector("#error-message");
 const connectionLabel = document.querySelector("#connection-label");
+const reviewDialog = document.querySelector("#review-dialog");
+const reviewForm = document.querySelector("#review-form");
+const reviewError = document.querySelector("#review-error");
 const transactionsById = new Map();
 let refreshInProgress = false;
+let reviewTarget = null;
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL"
 });
-
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
-  dateStyle: "short",
-  timeStyle: "short"
-});
-
-function formatDate(value) {
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : dateFormatter.format(date);
-}
 
 function appendCell(row, content, className) {
   const cell = document.createElement("td");
@@ -56,7 +51,12 @@ function makeDetails(transaction) {
     ["ID", transaction.id],
     ["Recebida em", formatDate(transaction.createdAt)],
     ["Analisada em", formatDate(transaction.analyzedAt)],
-    ["Motivo", transaction.analysisReason || "Aguardando conclusão da análise."]
+    ["Resultado automático", transaction.analysisStatus || "Aguardando análise."],
+    ["Motivo da análise", transaction.analysisReason || "Aguardando conclusão da análise."],
+    ["Decisão manual", transaction.manualDecision || "Não decidida"],
+    ["Responsável", transaction.reviewedBy || "—"],
+    ["Justificativa manual", transaction.reviewReason || "—"],
+    ["Decidida em", formatDate(transaction.reviewedAt)]
   ];
 
   for (const [label, value] of information) {
@@ -100,9 +100,40 @@ function renderTransactions() {
 
     const result = transaction.analysisStatus;
     const resultCell = result
-      ? makePill(result === "REVIEW" ? "Revisão" : "Aprovada", result === "REVIEW" ? "result-review" : "result-approved")
+      ? makePill(result === "REVIEW" ? "Requer revisão" : "Aprovada", result === "REVIEW" ? "result-review" : "result-approved")
       : Object.assign(document.createElement("span"), { className: "result-empty", textContent: "Aguardando" });
     appendCell(row, resultCell);
+
+    let decisionCell;
+    if (transaction.manualDecision) {
+      const approved = transaction.manualDecision === "APPROVED";
+      decisionCell = makePill(
+        approved ? "Aprovada manualmente" : "Rejeitada",
+        approved ? "decision-approved" : "decision-rejected"
+      );
+    } else if (transaction.analysisStatus === "REVIEW") {
+      decisionCell = document.createElement("div");
+      decisionCell.className = "review-actions";
+      const approveButton = document.createElement("button");
+      approveButton.className = "review-action approve-action";
+      approveButton.type = "button";
+      approveButton.dataset.transactionId = transaction.id;
+      approveButton.dataset.decision = "APPROVED";
+      approveButton.textContent = "Aprovar";
+      const rejectButton = document.createElement("button");
+      rejectButton.className = "review-action reject-action";
+      rejectButton.type = "button";
+      rejectButton.dataset.transactionId = transaction.id;
+      rejectButton.dataset.decision = "REJECTED";
+      rejectButton.textContent = "Rejeitar";
+      decisionCell.append(approveButton, rejectButton);
+    } else {
+      decisionCell = Object.assign(document.createElement("span"), {
+        className: "result-empty",
+        textContent: transaction.status === "ANALYZED" ? "Automática" : "Aguardando"
+      });
+    }
+    appendCell(row, decisionCell);
     appendCell(row, makeDetails(transaction));
     rowsContainer.append(row);
   }
@@ -118,20 +149,26 @@ function updateMetrics(transactions) {
   document.querySelector("#metric-total").textContent = String(transactions.length);
   document.querySelector("#metric-pending").textContent = String(transactions.length - analyzed.length);
   document.querySelector("#metric-approved").textContent =
-    String(analyzed.filter((item) => item.analysisStatus === "APPROVED").length);
+    String(analyzed.filter((item) => item.analysisStatus === "APPROVED" || item.manualDecision === "APPROVED").length);
   document.querySelector("#metric-review").textContent =
-    String(analyzed.filter((item) => item.analysisStatus === "REVIEW").length);
+    String(analyzed.filter((item) => item.analysisStatus === "REVIEW" && !item.manualDecision).length);
   updateCharts(transactions);
 }
 
 function updateCharts(transactions) {
-  const approved = transactions.filter((item) => item.analysisStatus === "APPROVED").length;
-  const review = transactions.filter((item) => item.analysisStatus === "REVIEW").length;
+  const approved = transactions.filter((item) =>
+    item.analysisStatus === "APPROVED" || item.manualDecision === "APPROVED"
+  ).length;
+  const review = transactions.filter((item) =>
+    item.analysisStatus === "REVIEW" && !item.manualDecision
+  ).length;
+  const rejected = transactions.filter((item) => item.manualDecision === "REJECTED").length;
   const pending = transactions.filter((item) => item.status !== "ANALYZED").length;
   const total = transactions.length;
   const segments = [
     { key: "approved", count: approved, color: "var(--chart-approved)" },
     { key: "review", count: review, color: "var(--chart-review)" },
+    { key: "rejected", count: rejected, color: "var(--chart-rejected)" },
     { key: "pending", count: pending, color: "var(--chart-pending)" }
   ];
   let start = 0;
@@ -147,7 +184,7 @@ function updateCharts(transactions) {
     : "conic-gradient(#e9edf3 0% 100%)";
   statusChart.setAttribute(
     "aria-label",
-    `Distribuição das últimas ${total} transações: ${approved} aprovadas, ${review} em revisão e ${pending} em processamento.`
+    `Distribuição das últimas ${total} transações: ${approved} aprovadas, ${review} aguardando revisão, ${rejected} rejeitadas e ${pending} em processamento.`
   );
   document.querySelector("#status-chart-total").textContent = String(total);
 
@@ -188,9 +225,7 @@ async function loadTransactions() {
   refreshInProgress = true;
   refreshButton.disabled = true;
   try {
-    const response = await fetch("/api/transacoes", { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`O serviço respondeu com HTTP ${response.status}.`);
-    const transactions = await response.json();
+    const transactions = await requestJson("/api/transacoes");
     if (!Array.isArray(transactions)) throw new Error("A resposta do serviço tem um formato inesperado.");
 
     transactionsById.clear();
@@ -222,20 +257,14 @@ form.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
 
   try {
-    const response = await fetch("/api/transacoes", {
+    const result = await requestJson("/api/transacoes", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         valor: Number(amountInput.value),
         estabelecimento: merchantInput.value.trim()
       })
     });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const message = result.message || result.detail || `O serviço respondeu com HTTP ${response.status}.`;
-      throw new Error(message);
-    }
-
     formMessage.textContent = `Transação ${result.id} recebida. Acompanhando o processamento...`;
     form.reset();
     await loadTransactions();
@@ -248,6 +277,77 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
+idempotencyButton.addEventListener("click", async () => {
+  formMessage.classList.remove("error");
+  formMessage.textContent = "";
+  idempotencyButton.disabled = true;
+  submitButton.disabled = true;
+  try {
+    const result = await requestJson("/api/portal/demo/idempotency", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        valor: Number(amountInput.value),
+        estabelecimento: merchantInput.value.trim()
+      })
+    });
+    formMessage.textContent =
+      `Teste concluído: ${result.duplicateMessagesPublished} mensagens repetidas, ${result.analysisCount} análise para ${result.transactionId} (${result.analysisStatus}).`;
+    form.reset();
+    await loadTransactions();
+    await loadKafkaEvents();
+  } catch (error) {
+    formMessage.classList.add("error");
+    formMessage.textContent = `Falha no teste de idempotência. ${error.message}`;
+  } finally {
+    idempotencyButton.disabled = false;
+    submitButton.disabled = false;
+  }
+});
+
+rowsContainer.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-transaction-id]");
+  if (!button) return;
+  reviewTarget = {
+    transactionId: button.dataset.transactionId,
+    decision: button.dataset.decision
+  };
+  const approving = reviewTarget.decision === "APPROVED";
+  document.querySelector("#review-dialog-title").textContent =
+    approving ? "Aprovar transação" : "Rejeitar transação";
+  document.querySelector("#review-confirm").textContent =
+    approving ? "Confirmar aprovação" : "Confirmar rejeição";
+  reviewError.textContent = "";
+  reviewForm.reset();
+  reviewDialog.showModal();
+});
+
+reviewForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!reviewTarget) return;
+  const confirmButton = document.querySelector("#review-confirm");
+  confirmButton.disabled = true;
+  reviewError.textContent = "";
+  try {
+    await requestJson(`/api/transacoes/${reviewTarget.transactionId}/review-decision`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        decision: reviewTarget.decision,
+        reviewedBy: document.querySelector("#reviewed-by").value.trim(),
+        reason: document.querySelector("#review-reason").value.trim()
+      })
+    });
+    reviewDialog.close();
+    await loadTransactions();
+  } catch (error) {
+    reviewError.textContent = `Não foi possível registrar a decisão. ${error.message}`;
+  } finally {
+    confirmButton.disabled = false;
+  }
+});
+
+document.querySelector("#review-cancel").addEventListener("click", () => reviewDialog.close());
 refreshButton.addEventListener("click", loadTransactions);
 searchInput.addEventListener("input", renderTransactions);
 loadTransactions();

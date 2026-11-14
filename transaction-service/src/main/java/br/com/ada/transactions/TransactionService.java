@@ -41,6 +41,23 @@ public class TransactionService {
         repository.save(transaction);
     }
 
+    @Transactional
+    public TransactionStatusResponse decideReview(UUID transactionId, ManualReviewRequest request) {
+        Transaction transaction = repository.findByIdForUpdate(transactionId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Transaction not found: " + transactionId));
+        if (!"ANALYZED".equals(transaction.getStatus()) || !"REVIEW".equals(transaction.getAnalysisStatus())) {
+            throw new IllegalStateException("Only analyzed transactions with REVIEW status can be decided manually");
+        }
+        if (transaction.getManualDecision() != null) {
+            throw new IllegalStateException("A manual decision already exists for this transaction");
+        }
+
+        transaction.decideReview(request, Instant.now());
+        repository.save(transaction);
+        return toStatusResponse(transaction);
+    }
+
     @Transactional(readOnly = true)
     public Optional<TransactionStatusResponse> findStatus(UUID transactionId) {
         return repository.findById(transactionId)
@@ -63,6 +80,10 @@ public class TransactionService {
                 transaction.getAnalysisStatus(),
                 transaction.getAnalysisReason(),
                 transaction.getCreatedAt(),
-                transaction.getAnalyzedAt());
+                transaction.getAnalyzedAt(),
+                transaction.getManualDecision(),
+                transaction.getReviewedBy(),
+                transaction.getReviewReason(),
+                transaction.getReviewedAt());
     }
 }

@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+spring:
+  application:
+    name: portal-service
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:app}
+    password: ${SPRING_RABBITMQ_PASSWORD:app}
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+app:
+  services:
+    transaction-management-url: ${TRANSACTION_MANAGEMENT_URL:http://localhost:8181}
+    transaction-api-url: ${TRANSACTION_API_URL:http://localhost:8081}
+    analysis-management-url: ${ANALYSIS_MANAGEMENT_URL:http://localhost:8182}
+    analysis-api-url: ${ANALYSIS_API_URL:http://localhost:8082}
+  rabbit:
+    exchange: transactions.exchange
+    routing-key: transactions.received
+  kafka:
+    topic: analysis.completed

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2b">
+  <title>Observabilidade · Portal Antifraude</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/portal-common.js" defer></script>
+  <script src="/observability.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Painel Antifraude - início">
+      <span class="brand-mark">A</span>
+      <span>ADA <span class="brand-light">/ portal antifraude</span></span>
+    </a>
+    <nav class="primary-nav" aria-label="Navegação principal">
+      <a class="nav-link" href="/">Visão geral</a>
+      <a class="nav-link nav-link-active" href="/observability.html" aria-current="page">Observabilidade</a>
+    </nav>
+    <div class="system-state">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span id="connection-label">Verificando serviços...</span>
+    </div>
+  </header>
+
+  <main class="page observability-page">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">SAÚDE E OPERAÇÕES</p>
+        <h1>Observabilidade</h1>
+        <p class="intro-copy">Acompanhe a saúde dos serviços e a atividade dos componentes de mensageria e cache.</p>
+      </div>
+      <button class="button button-quiet" id="refresh-observability" type="button">
+        <span aria-hidden="true">↻</span> Atualizar tudo
+      </button>
+    </section>
+
+    <section class="health-card" aria-labelledby="health-title">
+      <div class="health-heading">
+        <div>
+          <p class="eyebrow">DEPENDÊNCIAS</p>
+          <h2 id="health-title">Saúde dos serviços</h2>
+        </div>
+        <div class="health-summary">
+          <span id="health-overall" class="health-status status-unknown">Verificando</span>
+          <button class="text-button" id="health-refresh" type="button">Verificar agora</button>
+        </div>
+      </div>
+      <div id="health-components" class="health-components" aria-live="polite">
+        <span class="health-placeholder">Consultando serviços e dependências...</span>
+      </div>
+      <p id="health-checked-at" class="chart-caption">A verificação inclui microserviços, bancos, RabbitMQ, Kafka e Redis.</p>
+    </section>
+
+    <section class="operations-grid observability-grid" aria-label="Eventos e cache">
+      <article class="operation-card">
+        <div class="operation-heading">
+          <div>
+            <p class="eyebrow">EVENTOS</p>
+            <h2>Kafka · analysis.completed</h2>
+          </div>
+          <button class="text-button" id="events-refresh" type="button">Atualizar</button>
+        </div>
+        <div id="kafka-events" class="event-list" aria-live="polite">
+          <p class="health-placeholder">Carregando eventos recentes...</p>
+        </div>
+      </article>
+      <article class="operation-card redis-card">
+        <div class="operation-heading">
+          <div>
+            <p class="eyebrow">CACHE</p>
+            <h2>Redis · analysisResults</h2>
+          </div>
+          <button class="text-button" id="redis-refresh" type="button">Verificar</button>
+        </div>
+        <div id="redis-status" class="redis-status" aria-live="polite">
+          <span class="health-placeholder">Consultando cache...</span>
+        </div>
+        <p class="chart-caption">Somente quantidade e memória são exibidas; valores do cache não são expostos.</p>
+      </article>
+    </section>
+
+    <footer class="page-footer">
+      <span>Projeto didático · Não utilizar para decisões financeiras reais.</span>
+      <span id="last-updated">Aguardando atualização</span>
+    </footer>
+  </main>
+</body>
+</html>

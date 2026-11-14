@@ -19,6 +19,7 @@
     <modules>
         <module>transaction-service</module>
         <module>analysis-service</module>
+        <module>portal-service</module>
     </modules>
 
     <properties>

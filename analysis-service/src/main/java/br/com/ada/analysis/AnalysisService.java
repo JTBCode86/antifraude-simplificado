@@ -62,4 +62,8 @@ public class AnalysisService {
                         result.getAnalyzedAt()))
                 .orElse(null);
     }
+
+    public long countByTransactionId(UUID transactionId) {
+        return repository.countByTransactionId(transactionId);
+    }
 }

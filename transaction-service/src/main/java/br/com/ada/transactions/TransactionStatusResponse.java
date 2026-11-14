@@ -12,5 +12,9 @@ public record TransactionStatusResponse(
         String analysisStatus,
         String analysisReason,
         Instant createdAt,
-        Instant analyzedAt) {
+        Instant analyzedAt,
+        String manualDecision,
+        String reviewedBy,
+        String reviewReason,
+        Instant reviewedAt) {
 }

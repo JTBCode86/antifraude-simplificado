@@ -150,4 +150,87 @@ class TransactionServiceTest {
         assertThrows(IllegalStateException.class, () -> service.completeAnalysis(event));
         verify(repository, never()).save(org.mockito.ArgumentMatchers.any(Transaction.class));
     }
+
+    @Test
+    void manualReviewDecisionPreservesAutomatedResultAndRecordsOperator() {
+        UUID id = UUID.randomUUID();
+        Instant analyzedAt = Instant.parse("2026-11-13T12:01:00Z");
+        Transaction transaction = new Transaction(
+                id,
+                new BigDecimal("1250.00"),
+                "Loja teste",
+                Instant.parse("2026-11-13T12:00:00Z"));
+        transaction.completeAnalysis(new AnalysisCompleted(
+                id,
+                new BigDecimal("1250.00"),
+                "Loja teste",
+                "REVIEW",
+                "Valor acima do limite",
+                analyzedAt));
+        when(repository.findByIdForUpdate(id)).thenReturn(Optional.of(transaction));
+
+        TransactionStatusResponse response = service.decideReview(
+                id,
+                new ManualReviewRequest(ManualReviewDecision.APPROVED, "Ana Operadora", "Compra validada"));
+
+        assertEquals("REVIEW", response.analysisStatus());
+        assertEquals("APPROVED", response.manualDecision());
+        assertEquals("Ana Operadora", response.reviewedBy());
+        assertEquals("Compra validada", response.reviewReason());
+        assertNotNull(response.reviewedAt());
+        verify(repository).save(transaction);
+    }
+
+    @Test
+    void manualReviewDecisionIsRejectedForTransactionsWithoutReviewResult() {
+        UUID id = UUID.randomUUID();
+        Transaction transaction = new Transaction(
+                id,
+                new BigDecimal("100.00"),
+                "Loja teste",
+                Instant.parse("2026-11-13T12:00:00Z"));
+        transaction.completeAnalysis(new AnalysisCompleted(
+                id,
+                new BigDecimal("100.00"),
+                "Loja teste",
+                "APPROVED",
+                "Valor dentro do limite",
+                Instant.parse("2026-11-13T12:01:00Z")));
+        when(repository.findByIdForUpdate(id)).thenReturn(Optional.of(transaction));
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.decideReview(
+                        id,
+                        new ManualReviewRequest(ManualReviewDecision.REJECTED, "Ana", "Revisão manual")));
+        verify(repository, never()).save(org.mockito.ArgumentMatchers.any(Transaction.class));
+    }
+
+    @Test
+    void manualReviewDecisionCannotReplaceAnExistingDecision() {
+        UUID id = UUID.randomUUID();
+        Transaction transaction = new Transaction(
+                id,
+                new BigDecimal("1250.00"),
+                "Loja teste",
+                Instant.parse("2026-11-13T12:00:00Z"));
+        transaction.completeAnalysis(new AnalysisCompleted(
+                id,
+                new BigDecimal("1250.00"),
+                "Loja teste",
+                "REVIEW",
+                "Valor acima do limite",
+                Instant.parse("2026-11-13T12:01:00Z")));
+        transaction.decideReview(
+                new ManualReviewRequest(ManualReviewDecision.REJECTED, "Ana", "Não reconhecida"),
+                Instant.parse("2026-11-13T12:02:00Z"));
+        when(repository.findByIdForUpdate(id)).thenReturn(Optional.of(transaction));
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.decideReview(
+                        id,
+                        new ManualReviewRequest(ManualReviewDecision.APPROVED, "Bruno", "Alteração")));
+        assertEquals("REJECTED", transaction.getManualDecision());
+    }
 }

@@ -4,16 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101a2b">
-  <title>Painel Antifraude</title>
+  <title>Portal Antifraude</title>
   <link rel="stylesheet" href="/styles.css">
+  <script src="/portal-common.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="Painel Antifraude - início">
       <span class="brand-mark">A</span>
-      <span>ADA <span class="brand-light">/ antifraude</span></span>
+      <span>ADA <span class="brand-light">/ portal antifraude</span></span>
     </a>
+    <nav class="primary-nav" aria-label="Navegação principal">
+      <a class="nav-link nav-link-active" href="/" aria-current="page">Visão geral</a>
+      <a class="nav-link" href="/observability.html">Observabilidade</a>
+    </nav>
     <div class="system-state">
       <span class="live-dot" aria-hidden="true"></span>
       <span id="connection-label">Conectando aos serviços...</span>
@@ -43,7 +48,7 @@
       </article>
       <article class="metric-card">
         <span class="metric-icon icon-approved" aria-hidden="true">✓</span>
-        <div><p>Aprovadas</p><strong id="metric-approved">—</strong></div>
+        <div><p>Decisão aprovada</p><strong id="metric-approved">—</strong></div>
       </article>
       <article class="metric-card">
         <span class="metric-icon icon-review" aria-hidden="true">!</span>
@@ -89,6 +94,7 @@
           <ul class="chart-legend">
             <li><span class="legend-label"><i class="legend-dot dot-approved"></i>Aprovadas</span><strong id="chart-approved">0 · 0%</strong></li>
             <li><span class="legend-label"><i class="legend-dot dot-review"></i>Em revisão</span><strong id="chart-review">0 · 0%</strong></li>
+            <li><span class="legend-label"><i class="legend-dot dot-rejected"></i>Rejeitadas</span><strong id="chart-rejected">0 · 0%</strong></li>
             <li><span class="legend-label"><i class="legend-dot dot-pending"></i>Em processamento</span><strong id="chart-pending">0 · 0%</strong></li>
           </ul>
         </div>
@@ -160,6 +166,8 @@
           <button class="button button-primary" id="submit-button" type="submit">
             Enviar para análise <span aria-hidden="true">→</span>
           </button>
+          <button class="button button-secondary" id="idempotency-button" type="button">Executar teste de idempotência</button>
+          <p class="demo-hint">Cria uma transação e reenvia a mesma mensagem duas vezes para demonstrar que só uma análise é gravada.</p>
           <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
         </form>
       </aside>
@@ -184,7 +192,8 @@
                 <th scope="col">Estabelecimento</th>
                 <th scope="col">Valor</th>
                 <th scope="col">Etapa</th>
-                <th scope="col">Resultado</th>
+                <th scope="col">Análise automática</th>
+                <th scope="col">Decisão final</th>
                 <th scope="col">Detalhes</th>
               </tr>
             </thead>
@@ -208,5 +217,21 @@
       <span id="last-updated">Aguardando atualização</span>
     </footer>
   </main>
+  <dialog id="review-dialog" class="review-dialog">
+    <form id="review-form">
+      <p class="eyebrow">REVISÃO MANUAL</p>
+      <h2 id="review-dialog-title">Decidir transação</h2>
+      <p id="review-dialog-description" class="dialog-copy">O resultado automático será preservado; sua decisão ficará registrada separadamente.</p>
+      <label for="reviewed-by">Nome do responsável</label>
+      <input id="reviewed-by" name="reviewedBy" maxlength="80" required>
+      <label for="review-reason">Justificativa</label>
+      <textarea id="review-reason" name="reason" maxlength="500" rows="3" required></textarea>
+      <p id="review-error" class="form-message error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" id="review-cancel" type="button">Cancelar</button>
+        <button class="button button-primary" id="review-confirm" type="submit">Confirmar decisão</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

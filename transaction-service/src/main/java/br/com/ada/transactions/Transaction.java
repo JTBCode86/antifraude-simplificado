@@ -32,6 +32,15 @@ public class Transaction {
 
     private Instant analyzedAt;
 
+    private String manualDecision;
+
+    private String reviewedBy;
+
+    @Column(length = 500)
+    private String reviewReason;
+
+    private Instant reviewedAt;
+
     protected Transaction() {
     }
 
@@ -74,10 +83,33 @@ public class Transaction {
         return analyzedAt;
     }
 
+    public String getManualDecision() {
+        return manualDecision;
+    }
+
+    public String getReviewedBy() {
+        return reviewedBy;
+    }
+
+    public String getReviewReason() {
+        return reviewReason;
+    }
+
+    public Instant getReviewedAt() {
+        return reviewedAt;
+    }
+
     public void completeAnalysis(AnalysisCompleted event) {
         status = "ANALYZED";
         analysisStatus = event.status();
         analysisReason = event.reason();
         analyzedAt = event.analyzedAt();
+    }
+
+    public void decideReview(ManualReviewRequest request, Instant decisionTime) {
+        manualDecision = request.decision().name();
+        reviewedBy = request.reviewedBy().trim();
+        reviewReason = request.reason().trim();
+        reviewedAt = decisionTime;
     }
 }

@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface AnalysisRepository extends JpaRepository<AnalysisResult, UUID> {
+    long countByTransactionId(UUID transactionId);
+
     @Modifying
     @Query(value = """
             INSERT INTO analysis_results
