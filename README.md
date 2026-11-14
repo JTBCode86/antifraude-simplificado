@@ -92,7 +92,7 @@ Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 
 ## Testes automatizados
 
-Os testes unitários usam JUnit 5 e Mockito e cobrem os três módulos, incluindo decisões manuais, idempotência, análise e publicação de eventos. O build Docker executa esses testes antes de empacotar cada serviço.
+Os testes automatizados usam JUnit 5 e Mockito e cobrem os três módulos, incluindo decisões manuais, idempotência, análise, publicação de eventos e cache: a segunda leitura usa o cache e resultados inexistentes não são armazenados. O build Docker executa esses testes antes de empacotar cada serviço.
 
 Para executá-los sem instalar Java ou Maven na máquina, abra o PowerShell na pasta do projeto:
 
@@ -104,7 +104,7 @@ docker run --rm `
   mvn -B test
 ```
 
-Uma saída com `BUILD SUCCESS` e `Tests run: 15, Failures: 0, Errors: 0` indica que os testes passaram.
+Uma saída com `BUILD SUCCESS` e `Tests run: 17, Failures: 0, Errors: 0` indica que os testes passaram.
 
 ### API do portal (diagnóstico opcional)
 
