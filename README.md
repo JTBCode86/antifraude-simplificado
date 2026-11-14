@@ -6,6 +6,8 @@ Projeto didático individual para demonstrar dois serviços Spring Boot, bancos 
 
 **Diagrama editável:** [Abrir arquitetura no draw.io](docs/arquitetura-antifraude.drawio)
 
+### Microserviços
+
 | Microserviço | Responsabilidade | Documentação |
 |---|---|---|
 | **Transações** | Recebe e registra transações; publica eventos no RabbitMQ. | [Ver README](transaction-service/README.md) |
