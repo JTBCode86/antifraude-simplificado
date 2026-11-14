@@ -41,17 +41,27 @@ As animações abaixo demonstram as operações do portal e a página de observa
 
 ![Demonstração da aprovação automática de uma transação](docs/assets/aprovacao-automatica.gif)
 
+**Dados de entrada:** estabelecimento `Loja - Demo`; valor `R$ 125,00`.
+
 ### Revisão manual
 
 ![Demonstração da revisão manual de uma transação](docs/assets/aprovacao-manual.gif)
+
+**Dados de entrada:** estabelecimento `Loja-Demo`; valor `R$ 1.700,00`.
+
+**Decisão manual:** aprovar; responsável `Demo`; justificativa `Aprovação Demo`.
 
 ### Idempotência
 
 ![Demonstração do teste de idempotência](docs/assets/idempotencia.gif)
 
+**Dados de entrada:** estabelecimento `Demo - Idempotência`; valor `R$ 400,00`. O teste publica duas mensagens repetidas e confirma uma análise (`APPROVED`).
+
 ### Observabilidade
 
 ![Demonstração da saúde dos serviços, eventos Kafka e cache Redis](docs/assets/observabilidade.gif)
+
+**Entrada:** nenhuma nova transação; a página consulta a saúde dos serviços, eventos do Kafka e informações do Redis gerados pelo fluxo.
 
 ## Requisitos
 
