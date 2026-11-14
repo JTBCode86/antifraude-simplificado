@@ -6,6 +6,11 @@ Projeto didático individual para demonstrar dois serviços Spring Boot, bancos 
 
 Diagrama editável do draw.io: [docs/arquitetura-antifraude.drawio](docs/arquitetura-antifraude.drawio).
 
+Documentação detalhada de cada microserviço:
+
+- [Serviço de Transações — descrição, arquitetura e estrutura](transaction-service/README.md)
+- [Serviço de Análise — descrição, arquitetura e estrutura](analysis-service/README.md)
+
 ```mermaid
 flowchart LR
     Cliente["Cliente"] -->|"POST transacoes"| T["Servico de Transacoes"]
