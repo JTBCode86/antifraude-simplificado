@@ -295,7 +295,6 @@ idempotencyButton.addEventListener("click", async () => {
       `Teste concluído: ${result.duplicateMessagesPublished} mensagens repetidas, ${result.analysisCount} análise para ${result.transactionId} (${result.analysisStatus}).`;
     form.reset();
     await loadTransactions();
-    await loadKafkaEvents();
   } catch (error) {
     formMessage.classList.add("error");
     formMessage.textContent = `Falha no teste de idempotência. ${error.message}`;
