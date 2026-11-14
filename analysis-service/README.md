@@ -26,7 +26,7 @@ flowchart LR
 4. Se a análise for nova, o serviço emite `AnalysisCompleted`; `AnalysisEventPublisher` publica o evento no Kafka após o commit da transação.
 5. O endpoint de consulta busca a análise por ID. Resultados encontrados podem ser armazenados no Redis por cinco minutos; resultados inexistentes não são armazenados.
 
-RabbitMQ distribui o trabalho para análise. Kafka publica o fluxo de resultados para que consumidores independentes possam usá-lo. Consumidores Kafka de auditoria ou relatórios são uma evolução futura e não fazem parte deste projeto.
+RabbitMQ distribui o trabalho para análise. Kafka publica o fluxo de resultados; o Serviço de Transações consome `analysis.completed` para atualizar o estado local. Consumidores adicionais para auditoria ou relatórios são uma evolução futura.
 
 ## API
 

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2b">
+  <title>Painel Antifraude</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Painel Antifraude - início">
+      <span class="brand-mark">A</span>
+      <span>ADA <span class="brand-light">/ antifraude</span></span>
+    </a>
+    <div class="system-state">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span id="connection-label">Conectando aos serviços...</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">MONITORAMENTO EM TEMPO REAL</p>
+        <h1>Acompanhe suas transações</h1>
+        <p class="intro-copy">Veja cada etapa, do recebimento ao resultado da análise.</p>
+      </div>
+      <button class="button button-quiet" id="refresh-button" type="button">
+        <span aria-hidden="true">↻</span> Atualizar
+      </button>
+    </section>
+
+    <section class="metrics" aria-label="Resumo das transações recentes">
+      <article class="metric-card">
+        <span class="metric-icon icon-total" aria-hidden="true">▤</span>
+        <div><p>Transações recentes</p><strong id="metric-total">—</strong></div>
+      </article>
+      <article class="metric-card">
+        <span class="metric-icon icon-pending" aria-hidden="true">◷</span>
+        <div><p>Em processamento</p><strong id="metric-pending">—</strong></div>
+      </article>
+      <article class="metric-card">
+        <span class="metric-icon icon-approved" aria-hidden="true">✓</span>
+        <div><p>Aprovadas</p><strong id="metric-approved">—</strong></div>
+      </article>
+      <article class="metric-card">
+        <span class="metric-icon icon-review" aria-hidden="true">!</span>
+        <div><p>Em revisão</p><strong id="metric-review">—</strong></div>
+      </article>
+    </section>
+
+    <section class="flow-card" aria-label="Etapas do fluxo">
+      <div class="flow-heading">
+        <div>
+          <p class="eyebrow">FLUXO EVENT-DRIVEN</p>
+          <h2>Da transação à decisão</h2>
+        </div>
+        <span class="flow-note">Processamento assíncrono</span>
+      </div>
+      <ol class="flow-steps">
+        <li><span class="step-number">01</span><span><strong>Recebida</strong><small>API · Serviço de Transações</small></span></li>
+        <li class="flow-connector" aria-hidden="true"></li>
+        <li><span class="step-number step-broker">02</span><span><strong>Encaminhada</strong><small>RabbitMQ · fila de análise</small></span></li>
+        <li class="flow-connector" aria-hidden="true"></li>
+        <li><span class="step-number step-analysis">03</span><span><strong>Analisada</strong><small>Serviço de Análise · PostgreSQL</small></span></li>
+        <li class="flow-connector" aria-hidden="true"></li>
+        <li><span class="step-number step-kafka">04</span><span><strong>Resultado recebido</strong><small>Kafka · atualização do status</small></span></li>
+      </ol>
+    </section>
+
+    <section class="workspace">
+      <aside class="create-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">NOVA OPERAÇÃO</p>
+            <h2>Criar transação</h2>
+          </div>
+          <span class="heading-plus" aria-hidden="true">+</span>
+        </div>
+        <form id="transaction-form">
+          <label for="merchant">Estabelecimento</label>
+          <input id="merchant" name="merchant" type="text" maxlength="160" placeholder="Ex.: Loja Central" required>
+          <label for="amount">Valor da transação</label>
+          <div class="amount-input">
+            <span>R$</span>
+            <input id="amount" name="amount" type="number" min="0.01" max="9999999999.99" step="0.01" placeholder="0,00" required>
+          </div>
+          <p class="form-hint">Valores acima de R$ 1.000,00 seguem para revisão (regra didática).</p>
+          <button class="button button-primary" id="submit-button" type="submit">
+            Enviar para análise <span aria-hidden="true">→</span>
+          </button>
+          <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </aside>
+
+      <section class="transactions-card" aria-labelledby="transactions-title">
+        <div class="table-heading">
+          <div>
+            <p class="eyebrow">ACOMPANHAMENTO</p>
+            <h2 id="transactions-title">Transações recentes</h2>
+          </div>
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input id="search-input" type="search" placeholder="Buscar estabelecimento ou ID" aria-label="Buscar transações">
+          </label>
+        </div>
+        <div id="error-message" class="error-message" role="alert" hidden></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Transação</th>
+                <th scope="col">Estabelecimento</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Etapa</th>
+                <th scope="col">Resultado</th>
+                <th scope="col">Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="transaction-rows"></tbody>
+          </table>
+          <div id="empty-state" class="empty-state" hidden>
+            <span class="empty-icon" aria-hidden="true">⌁</span>
+            <strong>Nenhuma transação encontrada</strong>
+            <p>Crie uma nova transação ou ajuste sua busca.</p>
+          </div>
+        </div>
+        <footer class="table-footer">
+          <span id="result-count">Carregando transações...</span>
+          <span>Atualização automática a cada 4 segundos</span>
+        </footer>
+      </section>
+    </section>
+
+    <footer class="page-footer">
+      <span>Projeto didático · Não utilizar para decisões financeiras reais.</span>
+      <span id="last-updated">Aguardando atualização</span>
+    </footer>
+  </main>
+</body>
+</html>

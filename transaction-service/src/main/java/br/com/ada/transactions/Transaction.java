@@ -23,6 +23,15 @@ public class Transaction {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Column(nullable = false, columnDefinition = "varchar(32) default 'RECEIVED'")
+    private String status = "RECEIVED";
+
+    private String analysisStatus;
+
+    private String analysisReason;
+
+    private Instant analyzedAt;
+
     protected Transaction() {
     }
 
@@ -47,5 +56,28 @@ public class Transaction {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getAnalysisStatus() {
+        return analysisStatus;
+    }
+
+    public String getAnalysisReason() {
+        return analysisReason;
+    }
+
+    public Instant getAnalyzedAt() {
+        return analyzedAt;
+    }
+
+    public void completeAnalysis(AnalysisCompleted event) {
+        status = "ANALYZED";
+        analysisStatus = event.status();
+        analysisReason = event.reason();
+        analyzedAt = event.analyzedAt();
     }
 }

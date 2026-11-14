@@ -1,6 +1,8 @@
 package br.com.ada.transactions;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,5 +30,39 @@ public class TransactionService {
                 transaction.getMerchant(),
                 transaction.getCreatedAt()));
         return new TransactionResponse(id, "RECEIVED");
+    }
+
+    @Transactional
+    public void completeAnalysis(AnalysisCompleted event) {
+        Transaction transaction = repository.findById(event.transactionId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Analysis received for unknown transaction " + event.transactionId()));
+        transaction.completeAnalysis(event);
+        repository.save(transaction);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TransactionStatusResponse> findStatus(UUID transactionId) {
+        return repository.findById(transactionId)
+                .map(this::toStatusResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TransactionStatusResponse> findRecent() {
+        return repository.findTop100ByOrderByCreatedAtDesc().stream()
+                .map(this::toStatusResponse)
+                .toList();
+    }
+
+    private TransactionStatusResponse toStatusResponse(Transaction transaction) {
+        return new TransactionStatusResponse(
+                transaction.getId(),
+                transaction.getAmount(),
+                transaction.getMerchant(),
+                transaction.getStatus(),
+                transaction.getAnalysisStatus(),
+                transaction.getAnalysisReason(),
+                transaction.getCreatedAt(),
+                transaction.getAnalyzedAt());
     }
 }

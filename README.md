@@ -8,23 +8,25 @@ Projeto didático individual para demonstrar dois serviços Spring Boot, bancos 
 
 ```mermaid
 flowchart LR
-    Cliente["Cliente"] -->|"POST transacoes"| T["Servico de Transacoes"]
+    Cliente["Cliente / Painel Web"] -->|"POST transacoes"| T["Servico de Transacoes"]
     T --> DB1["Banco de transacoes (PostgreSQL)"]
     T -->|"TransacaoRecebida"| Q["RabbitMQ"]
     Q --> A["Servico de Analise"]
     A --> DB2["Banco de analises (PostgreSQL)"]
     A -->|"AnalysisCompleted"| K["Kafka: analysis.completed"]
+    K -->|"Atualiza status"| T
     Cliente -->|"Consultar analise por ID"| A
+    Cliente -->|"Listar / consultar status"| T
     A --> C["Cache Redis (5 min)"]
 ```
 
-Cada serviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. RabbitMQ distribui o trabalho para análise; Kafka fornece um fluxo de resultados para consumidores independentes. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
+Cada serviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. O Serviço de Transações também consome esse tópico para atualizar seu estado local e permitir que o cliente acompanhe a transação. RabbitMQ distribui o trabalho de análise; Kafka transporta o resultado. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
 
 ## Microserviços
 
 | Microserviço | Responsabilidade | Documentação |
 |---|---|---|
-| **Transações** | Recebe e registra transações; publica eventos no RabbitMQ. | [Ver README](transaction-service/README.md) |
+| **Transações** | Recebe transações, publica no RabbitMQ e acompanha resultados via Kafka. | [Ver README](transaction-service/README.md) |
 | **Análise** | Analisa transações; consulta o Redis e publica resultados no Kafka. | [Ver README](analysis-service/README.md) |
 
 ## Requisitos
@@ -45,7 +47,7 @@ Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 
 | Componente | Endereço |
 |---|---|
-| Serviço de Transações | http://localhost:8081 |
+| Painel web e Serviço de Transações | http://localhost:8081 |
 | Serviço de Análise | http://localhost:8082 |
 | Painel RabbitMQ | http://localhost:15672 (app / app) |
 | Kafka (broker local) | localhost:9092 |
@@ -55,7 +57,7 @@ Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 
 ## Testes automatizados
 
-Os testes unitários usam JUnit 5 e Mockito e cobrem a criação/publicação de transações, a regra didática de análise, a idempotência e a consulta de resultados. O build Docker executa esses testes antes de empacotar cada serviço.
+Os testes unitários usam JUnit 5 e Mockito e cobrem a criação/publicação de transações, a regra didática de análise, a idempotência, a consulta de resultados e a atualização do status após o evento Kafka. O build Docker executa esses testes antes de empacotar cada serviço.
 
 Para executá-los sem instalar Java ou Maven na máquina, abra o PowerShell na pasta do projeto:
 
@@ -67,7 +69,11 @@ docker run --rm `
   mvn -B test
 ```
 
-Uma saída com `BUILD SUCCESS` e `Tests run: 7, Failures: 0, Errors: 0` indica que os testes passaram.
+Uma saída com `BUILD SUCCESS` e `Tests run: 11, Failures: 0, Errors: 0` indica que os testes passaram.
+
+### Painel de acompanhamento
+
+Com os serviços iniciados, abra [http://localhost:8081](http://localhost:8081) para criar transações e acompanhar as 100 mais recentes. A página atualiza automaticamente a cada quatro segundos e mostra o resultado `APPROVED` ou `REVIEW`. O endpoint `GET /api/transacoes` fornece os dados à interface; o endpoint individual de status também está disponível em `GET /api/transacoes/{id}/status`.
 
 Crie uma transação:
 
@@ -86,6 +92,14 @@ Invoke-RestMethod -Uri "http://localhost:8082/api/analises/$($resposta.id)"
 ```
 
 Se a resposta ainda for `404`, aguarde a mensagem ser processada e tente novamente. Valores acima de 1.000 recebem o resultado didático `REVIEW`; os demais recebem `APPROVED`.
+
+Para acompanhar o processamento usando o estado persistido pelo Serviço de Transações:
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8081/api/transacoes/$($resposta.id)/status"
+```
+
+Inicialmente, `status` será `RECEIVED`. Após consumir o evento de conclusão pelo Kafka, passa a `ANALYZED` e inclui `analysisStatus` (`APPROVED` ou `REVIEW`) e o motivo. Como o fluxo é assíncrono, repita a consulta se o resultado ainda não estiver disponível.
 
 ### Verificar idempotência
 
