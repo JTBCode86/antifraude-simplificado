@@ -33,6 +33,26 @@ O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microser
 | **Serviço de Transações** | Registra transações, publica no RabbitMQ, acompanha análises e registra decisões manuais de revisão. | [Ver README](transaction-service/README.md) |
 | **Serviço de Análise** | Analisa transações, consulta o Redis e publica resultados no Kafka. | [Ver README](analysis-service/README.md) |
 
+## Demo
+
+As animações abaixo demonstram as operações do portal e a página de observabilidade.
+
+### Aprovação automática
+
+![Demonstração da aprovação automática de uma transação](docs/assets/aprovacao-automatica.gif)
+
+### Revisão manual
+
+![Demonstração da revisão manual de uma transação](docs/assets/aprovacao-manual.gif)
+
+### Idempotência
+
+![Demonstração do teste de idempotência](docs/assets/idempotencia.gif)
+
+### Observabilidade
+
+![Demonstração da saúde dos serviços, eventos Kafka e cache Redis](docs/assets/observabilidade.gif)
+
 ## Requisitos
 
 - Docker Desktop em execução com suporte a containers Linux.
