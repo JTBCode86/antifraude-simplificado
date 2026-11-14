@@ -61,7 +61,7 @@ As animações abaixo demonstram as operações do portal e a página de observa
 
 ![Demonstração da saúde dos serviços, eventos Kafka e cache Redis](docs/assets/observabilidade.gif)
 
-**Entrada:** nenhuma nova transação; a página consulta a saúde dos serviços, eventos do Kafka e informações do Redis gerados pelo fluxo.
+**Entrada:** nenhuma nova transação. A página mostra a saúde dos serviços e o estado do Redis, além dos eventos do Kafka produzidos pelos testes anteriores.
 
 ## Requisitos
 
