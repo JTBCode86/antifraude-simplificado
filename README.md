@@ -34,22 +34,26 @@ Projeto didático individual para demonstrar um portal web com BFF, dois microse
 ```mermaid
 flowchart LR
     Cliente["Banca / navegador"] -->|"Portal web :8080"| P["Portal BFF"]
-    P -->|"REST"| T["Servico de Transacoes"]
-    T --> DB1["Banco de transacoes (PostgreSQL)"]
+    P -->|"REST: criar / aprovar / rejeitar REVIEW"| T["Servico de Transacoes"]
+    T -->|"grava / atualiza status"| DB1["Banco de transacoes (PostgreSQL)"]
     T -->|"TransacaoRecebida"| Q["RabbitMQ"]
     Q --> A["Servico de Analise"]
-    A --> DB2["Banco de analises (PostgreSQL)"]
-    A -->|"AnalysisCompleted"| K["Kafka: analysis.completed"]
-    K -->|"Atualiza status"| T
-    P -->|"REST"| A
+    A -->|"cache miss / novo resultado"| DB2["Banco de analises (PostgreSQL)"]
+    A -->|"AnalysisCompleted apos commit"| K["Kafka: analysis.completed"]
+    K -->|"Atualiza status no banco proprio"| T
+    P -->|"REST: consulta analise"| A
     P -.->|"eventos recentes"| K
     P -.->|"health / idempotencia"| Q
     P -.->|"health / cache"| C
-    A --> C["Cache Redis (5 min)"]
+    A -->|"consulta / preenche resultados encontrados"| C["Cache Redis (TTL 5 min)"]
 ```
 </details>
 
 O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microserviços e oferece verificações de saúde e operações guiadas de demonstração. O BFF não lê diretamente os bancos dos serviços. Cada microserviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. O Serviço de Transações também consome esse tópico para atualizar seu estado local. RabbitMQ distribui o trabalho de análise; Kafka transporta o resultado. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
+
+Quando a análise fica `REVIEW`, o operador pode aprovar ou rejeitar pelo portal. O Serviço de Transações registra a decisão, o responsável e a justificativa separadamente do resultado automático. Ao consumir `AnalysisCompleted`, ele atualiza o status no próprio PostgreSQL.
+
+No GET de análise, o Serviço de Análise consulta o Redis; em caso de cache miss, consulta o PostgreSQL. Somente resultados encontrados são armazenados no cache, com TTL de cinco minutos; resultados ausentes não são cacheados.
 
 <a id="aplicacoes"></a>
 ## 🧩 Aplicações
