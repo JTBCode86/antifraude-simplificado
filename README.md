@@ -6,6 +6,17 @@ Projeto didático individual para demonstrar um portal web com BFF, dois microse
 
 **Diagrama editável:** [Abrir arquitetura no draw.io](docs/arquitetura-antifraude.drawio)
 
+![Diagrama da arquitetura e do fluxo de informações do Antifraude simplificado](docs/assets/fluxo-informacoes.png)
+
+<details>
+<summary>Assistir à animação do fluxo de informações</summary>
+
+![Animação do fluxo de informações, da transação à atualização do resultado](docs/assets/fluxo-informacoes.gif)
+</details>
+
+<details>
+<summary>Ver diagrama Mermaid</summary>
+
 ```mermaid
 flowchart LR
     Cliente["Banca / navegador"] -->|"Portal web :8080"| P["Portal BFF"]
@@ -22,6 +33,7 @@ flowchart LR
     P -.->|"health / cache"| C
     A --> C["Cache Redis (5 min)"]
 ```
+</details>
 
 O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microserviços e oferece verificações de saúde e operações guiadas de demonstração. O BFF não lê diretamente os bancos dos serviços. Cada microserviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. O Serviço de Transações também consome esse tópico para atualizar seu estado local. RabbitMQ distribui o trabalho de análise; Kafka transporta o resultado. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
 
