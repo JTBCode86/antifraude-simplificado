@@ -55,6 +55,15 @@ Quando a análise fica `REVIEW`, o operador pode aprovar ou rejeitar pelo portal
 
 No GET de análise, o Serviço de Análise consulta o Redis; em caso de cache miss, consulta o PostgreSQL. Somente resultados encontrados são armazenados no cache, com TTL de cinco minutos; resultados ausentes não são cacheados.
 
+### Ciclo de vida da transação
+
+| Etapa | O que acontece |
+|---|---|
+| Recebimento | O Serviço de Transações persiste a transação como `RECEIVED` e publica `TransactionReceived` no RabbitMQ. |
+| Análise | O Serviço de Análise consome a mensagem, persiste o resultado e publica `AnalysisCompleted` no Kafka após o commit. |
+| Atualização | O Serviço de Transações consome o evento, muda o status para `ANALYZED` e registra `analysisStatus` (`APPROVED` ou `REVIEW`) no próprio banco. |
+| Revisão manual | Para `REVIEW`, o operador aprova ou rejeita pelo portal. A decisão, o responsável e a justificativa ficam registrados separadamente do resultado automático. |
+
 <a id="aplicacoes"></a>
 ## 🧩 Aplicações
 
@@ -68,6 +77,13 @@ No GET de análise, o Serviço de Análise consulta o Redis; em caso de cache mi
 ## 🎬 Demo
 
 As animações abaixo demonstram as operações do portal e a página de observabilidade, incluindo o resumo da saúde agrupado por aplicações e infraestrutura.
+
+### Roteiro rápido
+
+1. [Inicie os serviços](#como-executar) e abra o [Portal](http://localhost:8080).
+2. Crie uma transação de `R$ 125,00` e acompanhe o resultado automático `APPROVED`.
+3. Crie uma transação de `R$ 1.700,00`; quando ficar `REVIEW`, aprove ou rejeite e confirme que a decisão manual não substitui o resultado automático.
+4. Abra **Observabilidade** para mostrar a saúde dos serviços, os eventos Kafka e as estatísticas do Redis.
 
 ### ✅ Aprovação automática
 
