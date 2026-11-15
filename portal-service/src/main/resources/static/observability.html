@@ -48,9 +48,23 @@
           <button class="text-button" id="health-refresh" type="button">Verificar agora</button>
         </div>
       </div>
-      <div id="health-components" class="health-components" aria-live="polite">
+      <div id="health-overview" class="health-overview" aria-label="Resumo das verificações" aria-live="polite">
         <span class="health-placeholder">Consultando serviços e dependências...</span>
       </div>
+      <section class="health-section" aria-labelledby="services-health-title">
+        <div class="health-section-heading">
+          <h3 id="services-health-title">Aplicações</h3>
+          <span>Serviços e verificações internas</span>
+        </div>
+        <div id="health-services" class="health-groups" aria-live="polite"></div>
+      </section>
+      <section class="health-section" aria-labelledby="infrastructure-health-title">
+        <div class="health-section-heading">
+          <h3 id="infrastructure-health-title">Infraestrutura</h3>
+          <span>Mensageria e cache</span>
+        </div>
+        <div id="health-infrastructure" class="health-groups health-infrastructure" aria-live="polite"></div>
+      </section>
       <p id="health-checked-at" class="chart-caption">A verificação inclui microserviços, bancos, RabbitMQ, Kafka e Redis.</p>
     </section>
 

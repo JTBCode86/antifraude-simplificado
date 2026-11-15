@@ -1,45 +1,183 @@
 const { formatDate, requestJson } = window.portalCommon;
 const healthOverall = document.querySelector("#health-overall");
-const healthComponents = document.querySelector("#health-components");
+const healthOverview = document.querySelector("#health-overview");
+const healthServices = document.querySelector("#health-services");
+const healthInfrastructure = document.querySelector("#health-infrastructure");
 const healthCheckedAt = document.querySelector("#health-checked-at");
 const kafkaEvents = document.querySelector("#kafka-events");
 const redisStatus = document.querySelector("#redis-status");
 
+const healthGroups = [
+  { name: "Portal web", section: "services" },
+  { name: "Serviço de Transações", section: "services" },
+  { name: "Serviço de Análise", section: "services" },
+  { name: "RabbitMQ", section: "infrastructure" },
+  { name: "Redis", section: "infrastructure" },
+  { name: "Kafka", section: "infrastructure" },
+];
+
+function healthCategory(status) {
+  switch (String(status).toUpperCase()) {
+    case "UP":
+      return "up";
+    case "DOWN":
+    case "OUT_OF_SERVICE":
+      return "down";
+    case "DEGRADED":
+    case "WARN":
+    case "WARNING":
+      return "attention";
+    default:
+      return "unknown";
+  }
+}
+
+function categoryLabel(category) {
+  return {
+    up: "Operacional",
+    attention: "Atenção",
+    down: "Indisponível",
+    unknown: "Desconhecido",
+  }[category];
+}
+
+function getGroupCategory(components) {
+  const categories = components.map((component) => healthCategory(component.status));
+  if (categories.includes("down")) return "down";
+  if (categories.includes("attention")) return "attention";
+  if (categories.includes("unknown")) return "unknown";
+  return "up";
+}
+
+function createHealthCheck(component) {
+  const category = healthCategory(component.status);
+  const item = document.createElement("li");
+  item.className = "health-check";
+  item.title = component.description || "";
+
+  const dot = document.createElement("span");
+  dot.className = `health-dot dot-${category}`;
+  dot.setAttribute("aria-hidden", "true");
+
+  const label = document.createElement("span");
+  label.className = "health-label";
+  label.textContent = component.name.includes(" · ")
+    ? component.name.slice(component.name.indexOf(" · ") + 3)
+    : component.name;
+
+  const status = document.createElement("strong");
+  status.className = `health-text-${category}`;
+  status.textContent = categoryLabel(category);
+
+  item.append(dot, label, status);
+  return item;
+}
+
+function createHealthGroup(group, components) {
+  const category = getGroupCategory(components);
+  const card = document.createElement("article");
+  card.className = `health-group group-${category}`;
+
+  const heading = document.createElement("div");
+  heading.className = "health-group-heading";
+  const title = document.createElement("h4");
+  title.textContent = group.name;
+  const status = document.createElement("span");
+  status.className = `health-status status-${category}`;
+  status.textContent = categoryLabel(category);
+  heading.append(title, status);
+
+  const count = document.createElement("p");
+  count.className = "health-group-count";
+  count.textContent = `${components.length} ${components.length === 1 ? "verificação" : "verificações"}`;
+
+  const checks = document.createElement("ul");
+  checks.className = "health-check-list";
+  for (const component of components) {
+    checks.append(createHealthCheck(component));
+  }
+
+  card.append(heading, count, checks);
+  return card;
+}
+
+function renderHealth(components) {
+  const counts = { up: 0, attention: 0, down: 0, unknown: 0 };
+  for (const component of components) {
+    counts[healthCategory(component.status)] += 1;
+  }
+
+  healthOverview.replaceChildren();
+  for (const [category, label] of [
+    ["up", "Operacionais"],
+    ["attention", "Atenção"],
+    ["down", "Indisponíveis"],
+    ["unknown", "Desconhecidos"],
+  ]) {
+    const card = document.createElement("div");
+    card.className = `health-metric metric-${category}`;
+    const value = document.createElement("strong");
+    value.textContent = String(counts[category]);
+    const caption = document.createElement("span");
+    caption.textContent = label;
+    card.append(value, caption);
+    healthOverview.append(card);
+  }
+
+  healthServices.replaceChildren();
+  healthInfrastructure.replaceChildren();
+  const rendered = new Set();
+  for (const group of healthGroups) {
+    const groupComponents = components.filter((component) =>
+      component.name === group.name || component.name.startsWith(`${group.name} · `));
+    if (groupComponents.length === 0) continue;
+
+    for (const component of groupComponents) rendered.add(component);
+    const target = group.section === "services" ? healthServices : healthInfrastructure;
+    target.append(createHealthGroup(group, groupComponents));
+  }
+
+  const otherComponents = components.filter((component) => !rendered.has(component));
+  if (otherComponents.length > 0) {
+    healthInfrastructure.append(createHealthGroup({ name: "Outras verificações" }, otherComponents));
+  }
+
+  return counts;
+}
+
 async function loadHealth() {
   try {
     const health = await requestJson("/api/portal/health");
-    const isUp = health.status === "UP";
+    const counts = renderHealth(health.components);
+    const componentCategory = getGroupCategory(health.components);
+    const overallCategory = health.status === "UP"
+      ? componentCategory
+      : componentCategory === "up" ? "attention" : componentCategory;
+    const isUp = health.status === "UP" && overallCategory === "up";
     healthOverall.textContent = isUp ? "Todos operacionais" : "Atenção necessária";
-    healthOverall.className = `health-status ${isUp ? "status-up" : "status-down"}`;
-    healthComponents.replaceChildren();
-    for (const component of health.components) {
-      const item = document.createElement("div");
-      item.className = "health-item";
-      const dot = document.createElement("span");
-      dot.className = `health-dot ${component.status === "UP" ? "dot-up" : "dot-down"}`;
-      const label = document.createElement("span");
-      label.className = "health-label";
-      label.textContent = component.name;
-      const status = document.createElement("strong");
-      status.className = component.status === "UP" ? "health-text-up" : "health-text-down";
-      status.textContent = component.status;
-      item.title = component.description || "";
-      item.append(dot, label, status);
-      healthComponents.append(item);
-    }
+    healthOverall.className = `health-status status-${isUp ? "up" : overallCategory}`;
     healthCheckedAt.textContent =
-      `Última verificação: ${formatDate(health.checkedAt)} · Atualização automática a cada 15 segundos.`;
+      `${health.components.length} verificações · Última verificação: ${formatDate(health.checkedAt)} · Atualização automática a cada 15 segundos.`;
     document.querySelector("#connection-label").textContent =
       isUp ? "Serviços conectados" : "Atenção à saúde dos serviços";
-    document.querySelector(".live-dot").classList.toggle("offline", !isUp);
+    document.querySelector(".live-dot").classList.toggle(
+      "offline",
+      !isUp || counts.down > 0 || counts.attention > 0,
+    );
   } catch (error) {
     healthOverall.textContent = "Verificação indisponível";
     healthOverall.className = "health-status status-down";
-    healthComponents.replaceChildren();
+    healthOverview.replaceChildren();
+    const summaryMessage = document.createElement("span");
+    summaryMessage.className = "health-placeholder error-text";
+    summaryMessage.textContent = "Resumo indisponível";
+    healthOverview.append(summaryMessage);
+    healthServices.replaceChildren();
+    healthInfrastructure.replaceChildren();
     const message = document.createElement("span");
-    message.className = "health-placeholder";
+    message.className = "health-placeholder error-text";
     message.textContent = error.message;
-    healthComponents.append(message);
+    healthServices.append(message);
     healthCheckedAt.textContent = "Não foi possível consultar a saúde dos serviços.";
     document.querySelector("#connection-label").textContent = "Sem conexão com os serviços";
     document.querySelector(".live-dot").classList.add("offline");

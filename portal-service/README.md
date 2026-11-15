@@ -17,7 +17,7 @@ Abra [http://localhost:8080](http://localhost:8080). O Portal BFF permite:
 - Criar e acompanhar transações, consultar os resultados e visualizar gráficos.
 - Aprovar ou rejeitar uma transação cuja análise automática esteja `REVIEW`. A ação manual não altera o resultado automático e requer responsável e justificativa.
 - Executar um teste guiado de idempotência que publica duas cópias da mesma mensagem e confirma a existência de uma única análise.
-- Abrir a página **Observabilidade** pelo menu para acompanhar a saúde dos serviços e dependências, visualizar eventos Kafka recentes e consultar contagem e memória das chaves do cache Redis.
+- Abrir a página **Observabilidade** pelo menu para acompanhar um resumo visual da saúde, com verificações agrupadas por aplicação e por infraestrutura, visualizar eventos Kafka recentes e consultar contagem e memória das chaves do cache Redis.
 
 O Compose também expõe as APIs dos microserviços nas portas `8081` e `8082` para diagnóstico local. As portas de gerenciamento Actuator (`8181` e `8182`) são internas à rede Docker.
 

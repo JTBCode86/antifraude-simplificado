@@ -35,7 +35,7 @@ O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microser
 
 ## Demo
 
-As animações abaixo demonstram as operações do portal e a página de observabilidade.
+As animações abaixo demonstram as operações do portal e a página de observabilidade, incluindo o resumo da saúde agrupado por aplicações e infraestrutura.
 
 ### Aprovação automática
 
@@ -59,9 +59,9 @@ As animações abaixo demonstram as operações do portal e a página de observa
 
 ### Observabilidade
 
-![Demonstração da saúde dos serviços, eventos Kafka e cache Redis](docs/assets/observabilidade.gif)
+![Demonstração do resumo de saúde dos serviços e da infraestrutura, eventos Kafka e cache Redis](docs/assets/observabilidade.gif)
 
-**Entrada:** nenhuma nova transação. A página mostra a saúde dos serviços e o estado do Redis, além dos eventos do Kafka produzidos pelos testes anteriores.
+**Entrada:** nenhuma nova transação. A página agrupa as verificações de saúde por aplicações e infraestrutura e mostra o estado do Redis e os eventos Kafka produzidos pelos testes anteriores.
 
 ## Requisitos
 
