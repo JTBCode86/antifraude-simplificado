@@ -188,6 +188,10 @@ Esses itens são propostas futuras, não recursos implementados atualmente.
 
 O perfil de execução deste projeto é **A (com Docker)**. Os ADRs registram o contexto, as alternativas e as consequências das decisões adotadas.
 
+## Uso de IA
+
+Ferramentas de IA generativa, incluindo o GitHub Copilot, foram usadas como apoio ao desenvolvimento e à documentação, inclusive na evolução do painel de observabilidade. O projeto foi conferido com `mvn -B test`, execução em Docker Compose a partir de volumes vazios e testes dos fluxos de aprovação automática, revisão manual, idempotência, Kafka, Redis e saúde dos serviços. O autor é responsável por revisar e compreender o código, as decisões e os resultados antes da entrega.
+
 ## Apresentação
 
 Roteiro sugerido para até 10 minutos, incluindo perguntas:
@@ -195,4 +199,4 @@ Roteiro sugerido para até 10 minutos, incluindo perguntas:
 1. Mostrar o fluxo e o perfil A.
 2. No portal, criar transações de resultado `APPROVED` e `REVIEW`, decidir um caso de revisão e executar o teste guiado de idempotência.
 3. Abrir **Observabilidade** pelo menu para mostrar saúde dos serviços, eventos Kafka recentes e estado do Redis; explicar os papéis distintos dos brokers e dos bancos separados.
-4. Apresentar os ADRs e comentar o que foi conferido manualmente e qualquer uso de IA.
+4. Apresentar os ADRs e explicar o uso de IA e as validações realizadas (ver [Uso de IA](#uso-de-ia)).
