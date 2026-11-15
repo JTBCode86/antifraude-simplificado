@@ -4,16 +4,16 @@ Projeto didático individual para demonstrar um portal web com BFF, dois microse
 
 ## Navegação rápida
 
-- [Arquitetura](#arquitetura)
-- [Aplicações](#aplicações)
-- [Demo](#demo)
-- [Requisitos](#requisitos)
-- [Como executar](#como-executar)
-- [Testes](#testes-automatizados)
-- [Trade-offs](#trade-offs-e-limitações-atuais)
-- [ADRs](#decisões-arquiteturais-adrs)
-- [Uso de IA](#uso-de-ia)
-- [Apresentação](#apresentação)
+- 🏗️ [Arquitetura](#arquitetura)
+- 🧩 [Aplicações](#aplicações)
+- 🎬 [Demo](#demo)
+- 📋 [Requisitos](#requisitos)
+- 🚀 [Como executar](#como-executar)
+- 🧪 [Testes](#testes-automatizados)
+- ⚖️ [Trade-offs](#trade-offs-e-limitações-atuais)
+- 🧾 [ADRs](#decisões-arquiteturais-adrs)
+- 🤖 [Uso de IA](#uso-de-ia)
+- 🎤 [Apresentação](#apresentação)
 
 ## Arquitetura
 
