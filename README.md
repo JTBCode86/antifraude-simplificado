@@ -2,6 +2,10 @@
 
 Projeto didático individual para demonstrar um portal web com BFF, dois microserviços Spring Boot, bancos isolados, RabbitMQ, Kafka e Redis. A regra de análise é fictícia e serve apenas para demonstrar o fluxo; não deve ser usada para decisões financeiras reais.
 
+## Navegação rápida
+
+[Arquitetura](#arquitetura) · [Aplicações](#aplicações) · [Demo](#demo) · [Requisitos](#requisitos) · [Como executar](#como-executar) · [Testes](#testes-automatizados) · [Trade-offs](#trade-offs-e-limitações-atuais) · [ADRs](#decisões-arquiteturais-adrs) · [Uso de IA](#uso-de-ia) · [Apresentação](#apresentação)
+
 ## Arquitetura
 
 **Diagrama editável:** [Abrir arquitetura no draw.io](docs/arquitetura-antifraude.drawio)
@@ -205,6 +209,8 @@ O perfil de execução deste projeto é **A (com Docker)**. Os ADRs registram o 
 Ferramentas de IA generativa, incluindo o GitHub Copilot, foram usadas como apoio ao desenvolvimento e à documentação, inclusive na evolução do painel de observabilidade. O projeto foi conferido com `mvn -B test`, execução em Docker Compose a partir de volumes vazios e testes dos fluxos de aprovação automática, revisão manual, idempotência, Kafka, Redis e saúde dos serviços. O autor é responsável por revisar e compreender o código, as decisões e os resultados antes da entrega.
 
 ## Apresentação
+
+Roteiros detalhados: [apresentação](apresentacao.md) e [passo a passo da demonstração](passo-a-passo.md).
 
 Roteiro sugerido para até 10 minutos, incluindo perguntas:
 
