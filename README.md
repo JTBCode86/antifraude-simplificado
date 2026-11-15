@@ -229,8 +229,6 @@ Ferramentas de IA generativa, incluindo o GitHub Copilot, foram usadas como apoi
 <a id="apresentacao"></a>
 ## 🎤 Apresentação
 
-Roteiros detalhados: [apresentação](apresentacao.md) e [passo a passo da demonstração](passo-a-passo.md).
-
 Roteiro sugerido para até 10 minutos, incluindo perguntas:
 
 1. Mostrar o fluxo e o perfil A.
