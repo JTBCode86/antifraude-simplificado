@@ -140,6 +140,21 @@ Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 | Banco de transações | localhost:5433 |
 | Banco de análises | localhost:5434 |
 
+### 🔧 Problemas comuns
+
+**O portal não abre em `http://localhost:8080`:** confirme que o Docker Desktop está em execução e verifique o estado dos containers e os logs:
+
+```powershell
+docker compose ps
+docker compose logs --tail=100
+```
+
+Se algum serviço ainda estiver iniciando, aguarde e consulte os logs para identificar erros antes de tentar novamente.
+
+**A consulta de análise retorna `404`:** o processamento é assíncrono. Aguarde a mensagem ser consumida pelo Serviço de Análise e repita a consulta; o status da transação pode ser acompanhado em `/api/transacoes/{id}/status`.
+
+**A inicialização informa que uma porta já está em uso:** encerre o processo ou container que está ocupando a porta indicada e inicie o Compose novamente. Consulte a tabela acima para os endereços usados pelo projeto. Evite `docker compose down -v` para esse diagnóstico, pois esse comando apaga os dados persistidos.
+
 <a id="testes-automatizados"></a>
 ## 🧪 Testes automatizados
 
