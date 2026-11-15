@@ -2,20 +2,21 @@
 
 Projeto didático individual para demonstrar um portal web com BFF, dois microserviços Spring Boot, bancos isolados, RabbitMQ, Kafka e Redis. A regra de análise é fictícia e serve apenas para demonstrar o fluxo; não deve ser usada para decisões financeiras reais.
 
-## Navegação rápida
+## 🧭 Navegação rápida
 
-- 🏗️ [Arquitetura](#arquitetura)
-- 🧩 [Aplicações](#aplicações)
-- 🎬 [Demo](#demo)
-- 📋 [Requisitos](#requisitos)
-- 🚀 [Como executar](#como-executar)
-- 🧪 [Testes](#testes-automatizados)
-- ⚖️ [Trade-offs](#trade-offs-e-limitações-atuais)
-- 🧾 [ADRs](#decisões-arquiteturais-adrs)
-- 🤖 [Uso de IA](#uso-de-ia)
-- 🎤 [Apresentação](#apresentação)
+- [Arquitetura](#arquitetura)
+- [Aplicações](#aplicacoes)
+- [Demo](#demo)
+- [Requisitos](#requisitos)
+- [Como executar](#como-executar)
+- [Testes](#testes-automatizados)
+- [Trade-offs](#trade-offs)
+- [ADRs](#adrs)
+- [Uso de IA](#uso-de-ia)
+- [Apresentação](#apresentacao)
 
-## Arquitetura
+<a id="arquitetura"></a>
+## 🏗️ Arquitetura
 
 **Diagrama editável:** [Abrir arquitetura no draw.io](docs/arquitetura-antifraude.drawio)
 
@@ -50,7 +51,8 @@ flowchart LR
 
 O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microserviços e oferece verificações de saúde e operações guiadas de demonstração. O BFF não lê diretamente os bancos dos serviços. Cada microserviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. O Serviço de Transações também consome esse tópico para atualizar seu estado local. RabbitMQ distribui o trabalho de análise; Kafka transporta o resultado. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
 
-## Aplicações
+<a id="aplicacoes"></a>
+## 🧩 Aplicações
 
 | Aplicação | Responsabilidade | Documentação |
 |---|---|---|
@@ -58,17 +60,18 @@ O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microser
 | **Serviço de Transações** | Registra transações, publica no RabbitMQ, acompanha análises e registra decisões manuais de revisão. | [Ver README](transaction-service/README.md) |
 | **Serviço de Análise** | Analisa transações, consulta o Redis e publica resultados no Kafka. | [Ver README](analysis-service/README.md) |
 
-## Demo
+<a id="demo"></a>
+## 🎬 Demo
 
 As animações abaixo demonstram as operações do portal e a página de observabilidade, incluindo o resumo da saúde agrupado por aplicações e infraestrutura.
 
-### Aprovação automática
+### ✅ Aprovação automática
 
 ![Demonstração da aprovação automática de uma transação](docs/assets/aprovacao-automatica.gif)
 
 **Dados de entrada:** estabelecimento `Loja - Demo`; valor `R$ 125,00`.
 
-### Revisão manual
+### 🔎 Revisão manual
 
 ![Demonstração da revisão manual de uma transação](docs/assets/aprovacao-manual.gif)
 
@@ -76,25 +79,27 @@ As animações abaixo demonstram as operações do portal e a página de observa
 
 **Decisão manual:** aprovar; responsável `Demo`; justificativa `Aprovação Demo`.
 
-### Idempotência
+### 🔁 Idempotência
 
 ![Demonstração do teste de idempotência](docs/assets/idempotencia.gif)
 
 **Dados de entrada:** estabelecimento `Demo - Idempotência`; valor `R$ 400,00`. O teste publica duas mensagens repetidas e confirma uma análise (`APPROVED`).
 
-### Observabilidade
+### 📊 Observabilidade
 
 ![Demonstração do resumo de saúde dos serviços e da infraestrutura, eventos Kafka e cache Redis](docs/assets/observabilidade.gif)
 
 **Entrada:** nenhuma nova transação. A página agrupa as verificações de saúde por aplicações e infraestrutura e mostra o estado do Redis e os eventos Kafka produzidos pelos testes anteriores.
 
-## Requisitos
+<a id="requisitos"></a>
+## 📋 Requisitos
 
 - Docker Desktop em execução com suporte a containers Linux.
 - Docker Compose v2 (`docker compose`).
 - O projeto usa Java 17 dentro das imagens; não é necessário substituir o Java 8 instalado na máquina.
 
-## Como executar
+<a id="como-executar"></a>
+## 🚀 Como executar
 
 Na pasta `antifraude-simplificado`, execute:
 
@@ -115,7 +120,8 @@ Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 | Banco de transações | localhost:5433 |
 | Banco de análises | localhost:5434 |
 
-## Testes automatizados
+<a id="testes-automatizados"></a>
+## 🧪 Testes automatizados
 
 Os testes automatizados usam JUnit 5 e Mockito e cobrem os três módulos, incluindo decisões manuais, idempotência, análise, publicação de eventos e cache: a segunda leitura usa o cache e resultados inexistentes não são armazenados. O build Docker executa esses testes antes de empacotar cada serviço.
 
@@ -131,7 +137,7 @@ docker run --rm `
 
 Uma saída com `BUILD SUCCESS` e `Tests run: 17, Failures: 0, Errors: 0` indica que os testes passaram.
 
-### API do portal (diagnóstico opcional)
+### 🔎 API do portal (diagnóstico opcional)
 
 Para a apresentação, use apenas a interface em [http://localhost:8080](http://localhost:8080); os exemplos de API a seguir são diagnósticos opcionais e não são necessários para operar o sistema. A página principal cria e acompanha as 100 transações mais recentes e exibe gráficos. A opção **Observabilidade** no menu abre a página separada com saúde dos serviços e dependências, eventos Kafka e informações do Redis.
 
@@ -177,7 +183,8 @@ Para apagar também os dados persistidos dos bancos (ação destrutiva):
 docker compose down -v
 ```
 
-## Trade-offs e limitações atuais
+<a id="trade-offs"></a>
+## ⚖️ Trade-offs e limitações atuais
 
 As escolhas abaixo privilegiam um projeto didático executável localmente; elas não representam uma configuração pronta para produção.
 
@@ -192,7 +199,7 @@ As escolhas abaixo privilegiam um projeto didático executável localmente; elas
 | Decisão manual para análises `REVIEW` | Permite demonstrar uma revisão humana sem apagar a classificação automática. | Não há autenticação nem identidade verificada do operador; responsável e justificativa são informados pelo usuário. |
 | Docker Compose local, broker único e credenciais demonstrativas | Fácil de executar e reproduzir para a apresentação. | Não há alta disponibilidade, autenticação da API nem configuração de produção; não exponha o ambiente à internet. |
 
-## Próximos passos para evolução
+## 🛣️ Próximos passos para evolução
 
 Em ordem sugerida:
 
@@ -204,7 +211,8 @@ Em ordem sugerida:
 
 Esses itens são propostas futuras, não recursos implementados atualmente.
 
-## Decisões arquiteturais (ADRs)
+<a id="adrs"></a>
+## 🧾 Decisões arquiteturais (ADRs)
 
 - [ADR-001: divisão dos serviços e bancos](docs/adr/ADR-001-servicos-e-bancos.md)
 - [ADR-002: RabbitMQ, entrega e idempotência](docs/adr/ADR-002-fila-e-idempotencia.md)
@@ -213,11 +221,13 @@ Esses itens são propostas futuras, não recursos implementados atualmente.
 
 O perfil de execução deste projeto é **A (com Docker)**. Os ADRs registram o contexto, as alternativas e as consequências das decisões adotadas.
 
-## Uso de IA
+<a id="uso-de-ia"></a>
+## 🤖 Uso de IA
 
 Ferramentas de IA generativa, incluindo o GitHub Copilot, foram usadas como apoio ao desenvolvimento e à documentação, inclusive na evolução do painel de observabilidade. O projeto foi conferido com `mvn -B test`, execução em Docker Compose a partir de volumes vazios e testes dos fluxos de aprovação automática, revisão manual, idempotência, Kafka, Redis e saúde dos serviços. O autor é responsável por revisar e compreender o código, as decisões e os resultados antes da entrega.
 
-## Apresentação
+<a id="apresentacao"></a>
+## 🎤 Apresentação
 
 Roteiros detalhados: [apresentação](apresentacao.md) e [passo a passo da demonstração](passo-a-passo.md).
 
