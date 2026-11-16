@@ -25,7 +25,7 @@ Projeto didático individual para demonstrar um portal web com BFF, dois microse
 <details>
 <summary>Assistir à animação do fluxo de informações</summary>
 
-![Animação do fluxo de informações, da transação à atualização do resultado](docs/assets/fluxo-informacoes.gif)
+![Animação do fluxo de informações com setas e legendas para cada etapa](docs/assets/fluxo-informacoes.gif)
 </details>
 
 <details>
