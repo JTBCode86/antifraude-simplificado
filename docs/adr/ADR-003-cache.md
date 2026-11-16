@@ -1,5 +1,7 @@
 # ADR-003: cache Redis
 
+[← Voltar ao README principal](../../README.md)
+
 - **Status:** Aceito
 - **Contexto:** O projeto precisa acelerar consultas de resultados de análise e documentar expiração e invalidação.
 - **Decisão:** `analysis-service` usa `@Cacheable` para resultados encontrados por ID, com TTL de 5 minutos configurado em `application.yml`. Resultados inexistentes (`null`) não são armazenados. A gravação de uma análise invalida a entrada para aquele ID.

@@ -1,5 +1,7 @@
 # ADR-004: tópico Kafka de resultados
 
+[← Voltar ao README principal](../../README.md)
+
 - **Status:** Aceito
 - **Contexto:** Além da fila de trabalho RabbitMQ, o projeto precisa publicar o resultado da análise e permitir acompanhar o estado da transação sem compartilhar bancos entre serviços.
 - **Decisão:** RabbitMQ permanece como canal de entrada para o trabalho de análise. Depois do commit de uma nova análise, `analysis-service` publica um evento `AnalysisCompleted` no tópico `analysis.completed`, usando o ID da transação como chave. `transaction-service` consome o tópico com seu próprio grupo e atualiza o estado e resultado no banco que possui. O tópico tem uma partição e uma réplica no ambiente local.

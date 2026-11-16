@@ -1,5 +1,7 @@
 # ADR-002: RabbitMQ, entrega e idempotência
 
+[← Voltar ao README principal](../../README.md)
+
 - **Status:** Aceito
 - **Contexto:** O Serviço de Análise deve receber transações sem acoplar o processamento ao tempo de resposta da API, e mensagens repetidas não podem gerar gravações duplicadas.
 - **Decisão:** `transaction-service` publica JSON no exchange `transactions.exchange`, com routing key `transactions.received`. `analysis-service` consome `transactions.queue` e registra o ID da transação como chave única. A gravação usa `ON CONFLICT DO NOTHING`.
