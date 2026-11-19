@@ -51,6 +51,15 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>${project.basedir}/../docs/contracts</directory>
+                <targetPath>contracts</targetPath>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

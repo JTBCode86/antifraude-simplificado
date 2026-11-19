@@ -160,6 +160,8 @@ Se algum serviço ainda estiver iniciando, aguarde e consulte os logs para ident
 
 Os testes automatizados usam JUnit 5 e Mockito e cobrem os três módulos, incluindo decisões manuais, idempotência, análise, publicação de eventos e cache: a segunda leitura usa o cache e resultados inexistentes não são armazenados. O build Docker executa esses testes antes de empacotar cada serviço.
 
+O contrato da mensagem `TransactionReceived` é verificado nos dois serviços contra um [exemplo JSON compartilhado](docs/contracts/transaction-received.json): o produtor deve publicar os campos esperados e o consumidor deve interpretá-los corretamente. Esses testes não iniciam o RabbitMQ nem verificam a integração real entre os serviços.
+
 Para executá-los sem instalar Java ou Maven na máquina, abra o PowerShell na pasta do projeto:
 
 ```powershell
@@ -170,7 +172,7 @@ docker run --rm `
   mvn -B test
 ```
 
-Uma saída com `BUILD SUCCESS` e `Tests run: 17, Failures: 0, Errors: 0` indica que os testes passaram.
+Uma saída com `BUILD SUCCESS`, sem falhas ou erros nos módulos, indica que os testes passaram.
 
 ### 🔎 API do portal (diagnóstico opcional)
 
@@ -241,7 +243,7 @@ Em ordem sugerida:
 1. **Garantir publicação confiável de eventos:** implementar o padrão Outbox nos pontos de publicação de `TransactionReceived` e `AnalysisCompleted`, evitando divergência entre commits nos bancos e mensagens nos brokers.
 2. **Recuperar falhas de processamento:** configurar retry com backoff e Dead Letter Queues (DLQ), incluindo visibilidade e procedimento de reprocessamento de mensagens inválidas.
 3. **Evoluir listagem e gráficos:** adicionar paginação e filtros no endpoint de transações; mover as agregações dos gráficos para consultas no backend para que não fiquem limitadas às 100 transações recentes.
-4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados, correlação de IDs e testes de integração/contrato automatizados no pipeline.
+4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados, correlação de IDs, testes de integração e execução automatizada dos testes no pipeline.
 5. **Preparar para uso fora do ambiente local:** adicionar autenticação e autorização no portal e nas decisões manuais, gerir segredos fora do Compose, habilitar TLS, backups e redundância para bancos e brokers.
 
 Esses itens são propostas futuras, não recursos implementados atualmente.
