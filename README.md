@@ -38,6 +38,7 @@ flowchart LR
     T -->|"grava / atualiza status"| DB1["Banco de transacoes (PostgreSQL)"]
     T -->|"TransacaoRecebida"| Q["RabbitMQ"]
     Q --> A["Servico de Analise"]
+    Q -.->|"falha apos tentativas"| DLQ["Fila de mensagens com falha (DLQ)"]
     A -->|"cache miss / novo resultado"| DB2["Banco de analises (PostgreSQL)"]
     A -->|"AnalysisCompleted apos commit"| K["Kafka: analysis.completed"]
     K -->|"Atualiza status no banco proprio"| T
@@ -129,6 +130,8 @@ docker compose up --build
 
 Aguarde os serviços ficarem prontos. Endpoints e ferramentas locais:
 
+**Atualização de uma instalação anterior:** os argumentos da fila `transactions.queue` mudaram para incluir a DLQ. Se um volume RabbitMQ antigo ainda contiver essa fila, o broker não aceita alterar seus argumentos na nova declaração. Antes de recriar somente essa fila pelo painel RabbitMQ, pare os serviços da aplicação, mantenha o RabbitMQ ativo e processe ou preserve as mensagens pendentes: apagar a fila as descarta. Não apague os volumes dos bancos para resolver esse conflito.
+
 | Componente | Endereço |
 |---|---|
 | Portal web (único endereço necessário para a apresentação) | http://localhost:8080 |
@@ -162,6 +165,8 @@ Os testes automatizados usam JUnit 5 e Mockito e cobrem os três módulos, inclu
 
 O contrato da mensagem `TransactionReceived` é verificado nos dois serviços contra um [exemplo JSON compartilhado](docs/contracts/transaction-received.json): o produtor deve publicar os campos esperados e o consumidor deve interpretá-los corretamente. Esses testes não iniciam o RabbitMQ nem verificam a integração real entre os serviços.
 
+Para falhas no consumidor RabbitMQ, há até três tentativas, com espera de 1 e depois 2 segundos. Após esgotá-las, a mensagem é encaminhada à fila `transactions.queue.dlq`, para inspeção manual. O teste de integração opcional `RabbitRetryIntegrationTest` usa um RabbitMQ isolado e verifica a recuperação de uma falha temporária e o envio à DLQ. Ele só é executado com `RUN_RABBIT_INTEGRATION=true` e conexão RabbitMQ configurada; não use um broker com dados de produção, pois o teste esvazia suas filas de teste.
+
 Para executá-los sem instalar Java ou Maven na máquina, abra o PowerShell na pasta do projeto:
 
 ```powershell
@@ -173,6 +178,26 @@ docker run --rm `
 ```
 
 Uma saída com `BUILD SUCCESS`, sem falhas ou erros nos módulos, indica que os testes passaram.
+
+Para executar também o teste de integração de retry e DLQ, crie um RabbitMQ temporário isolado:
+
+```powershell
+docker run --rm -d --name antifraude-teste-retry rabbitmq:3.13-management
+docker exec antifraude-teste-retry rabbitmq-diagnostics -q ping
+```
+
+Após o comando informar `Ping succeeded`, execute o teste na pasta do projeto:
+
+```powershell
+docker run --rm --network container:antifraude-teste-retry `
+  -e RUN_RABBIT_INTEGRATION=true `
+  --mount "type=bind,source=$($PWD.Path),target=/workspace" `
+  --workdir /workspace `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn -B -pl analysis-service -Dtest=RabbitRetryIntegrationTest test
+```
+
+Depois, remova o broker temporário com `docker stop antifraude-teste-retry`. O teste não altera as filas nem os volumes do Compose.
 
 ### 🔎 API do portal (diagnóstico opcional)
 
@@ -230,7 +255,7 @@ As escolhas abaixo privilegiam um projeto didático executável localmente; elas
 | Portal BFF separado dos microserviços | Dá à banca uma interface única e mantém o portal isolado das APIs internas e dos bancos. | É mais um serviço para executar e manter; não há autenticação ou autorização e ele deve permanecer restrito ao ambiente local. |
 | Dois microserviços com bancos próprios | Responsabilidades e propriedade dos dados ficam claras. | Há mais componentes para iniciar e manter; a comunicação entre serviços é eventual, então a análise não fica disponível imediatamente. |
 | RabbitMQ para o trabalho e Kafka para os resultados | Cada broker demonstra um papel diferente no fluxo. | Operar dois brokers aumenta a complexidade. A gravação no PostgreSQL e a publicação do evento não são atômicas; uma falha pode deixar o evento pendente ou ausente. |
-| Entrega pelo menos uma vez e gravação idempotente | Reentregas do RabbitMQ não criam análises duplicadas. | O projeto ainda não configura políticas explícitas de retry com backoff nem DLQs para isolar mensagens que falham repetidamente. |
+| Entrega pelo menos uma vez, idempotência e DLQ | Reentregas não criam análises duplicadas; falhas persistentes são encaminhadas para inspeção. | O retry ocupa o consumidor durante as esperas; não há alerta nem reprocessamento automático da DLQ, e a transferência pela fila clássica não é garantida em toda falha do broker. |
 | Cache Redis com TTL de cinco minutos | Consultas repetidas podem evitar leituras ao PostgreSQL. | Redis é uma dependência adicional; sem invalidação, um resultado pode ficar desatualizado até o TTL expirar. |
 | Painel com polling a cada quatro segundos | A interface é simples e acompanha o estado sem conexão persistente. | Há atraso entre atualizações e requisições periódicas. Tabela e gráficos usam somente as 100 transações mais recentes; o gráfico temporal as agrupa em intervalos de quatro horas. |
 | Decisão manual para análises `REVIEW` | Permite demonstrar uma revisão humana sem apagar a classificação automática. | Não há autenticação nem identidade verificada do operador; responsável e justificativa são informados pelo usuário. |
@@ -241,7 +266,7 @@ As escolhas abaixo privilegiam um projeto didático executável localmente; elas
 Em ordem sugerida:
 
 1. **Garantir publicação confiável de eventos:** implementar o padrão Outbox nos pontos de publicação de `TransactionReceived` e `AnalysisCompleted`, evitando divergência entre commits nos bancos e mensagens nos brokers.
-2. **Recuperar falhas de processamento:** configurar retry com backoff e Dead Letter Queues (DLQ), incluindo visibilidade e procedimento de reprocessamento de mensagens inválidas.
+2. **Evoluir a recuperação de falhas:** adicionar visibilidade, alertas e um procedimento de reprocessamento seguro para mensagens na DLQ.
 3. **Evoluir listagem e gráficos:** adicionar paginação e filtros no endpoint de transações; mover as agregações dos gráficos para consultas no backend para que não fiquem limitadas às 100 transações recentes.
 4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados, correlação de IDs, testes de integração e execução automatizada dos testes no pipeline.
 5. **Preparar para uso fora do ambiente local:** adicionar autenticação e autorização no portal e nas decisões manuais, gerir segredos fora do Compose, habilitar TLS, backups e redundância para bancos e brokers.

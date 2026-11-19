@@ -13,7 +13,15 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfiguration {
     @Bean
     Queue transactionsQueue(@Value("${app.rabbit.queue}") String queueName) {
-        return QueueBuilder.durable(queueName).build();
+        return QueueBuilder.durable(queueName)
+                .deadLetterExchange("")
+                .deadLetterRoutingKey(queueName + ".dlq")
+                .build();
+    }
+
+    @Bean
+    Queue transactionsDeadLetterQueue(@Value("${app.rabbit.queue}") String queueName) {
+        return QueueBuilder.durable(queueName + ".dlq").build();
     }
 
     @Bean

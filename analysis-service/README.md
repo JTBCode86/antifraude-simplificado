@@ -28,6 +28,8 @@ flowchart LR
 
 RabbitMQ distribui o trabalho para análise. Kafka publica o fluxo de resultados; o Serviço de Transações consome `analysis.completed` para atualizar o estado local. Consumidores adicionais para auditoria ou relatórios são uma evolução futura.
 
+Se o processamento de uma mensagem falhar, o consumidor tenta até três vezes no total, com esperas de 1 e 2 segundos. Após esgotar as tentativas, o RabbitMQ encaminha a mensagem para a fila durável `transactions.queue.dlq`. Ela não é reprocessada automaticamente: deve ser inspecionada antes de uma eventual ação manual.
+
 ## API
 
 ### Consultar análise
@@ -102,7 +104,7 @@ Configurações padrão e variáveis de ambiente estão em `src/main/resources/a
 
 ## Testes
 
-`AnalysisServiceTest` cobre a classificação nos limites da regra didática, a publicação somente para uma nova análise e as consultas encontradas e inexistentes. O build da imagem Docker executa os testes Maven antes de empacotar o serviço.
+`AnalysisServiceTest` cobre a classificação nos limites da regra didática, a publicação somente para uma nova análise e as consultas encontradas e inexistentes. O build da imagem Docker executa os testes Maven antes de empacotar o serviço. O teste opcional `RabbitRetryIntegrationTest` usa um RabbitMQ isolado para verificar as tentativas e o encaminhamento à DLQ; consulte as instruções no [README principal](../README.md#testes-automatizados).
 
 ## Limitações conhecidas
 
