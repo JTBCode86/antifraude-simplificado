@@ -20,12 +20,12 @@ Projeto didático individual para demonstrar um portal web com BFF, dois microse
 
 **Diagrama editável:** [Abrir arquitetura no draw.io](docs/arquitetura-antifraude.drawio)
 
-![Diagrama da arquitetura e do fluxo de informações do Antifraude simplificado](docs/assets/fluxo-informacoes.png)
+![Diagrama da arquitetura e do fluxo de informações, incluindo retry e DLQ](docs/assets/fluxo-informacoes.png)
 
 <details>
 <summary>Assistir à animação do fluxo de informações</summary>
 
-![Animação do fluxo de informações com setas e legendas para cada etapa](docs/assets/fluxo-informacoes.gif)
+![Animação do fluxo de informações com setas, legendas e caminho de falha até a DLQ](docs/assets/fluxo-informacoes.gif)
 </details>
 
 <details>

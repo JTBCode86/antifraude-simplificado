@@ -19,7 +19,7 @@
         <mxCell id="iZEVscF0YquXVBqnwBnQ-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;align=center;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Serviço de Transações&lt;/b&gt;&lt;br&gt;Spring Boot&lt;br&gt;API REST: 8081 · Actuator interno: 8181&lt;br&gt;Acompanhamento e revisão manual de transações" vertex="1">
           <mxGeometry height="150" width="330" x="180" y="260" as="geometry" />
         </mxCell>
-        <mxCell id="iZEVscF0YquXVBqnwBnQ-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;align=center;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Serviço de Análise&lt;/b&gt;&lt;br&gt;Spring Boot&lt;br&gt;API REST: 8082 · Actuator interno: 8182&lt;br&gt;Consome transações e aplica a regra didática&lt;br&gt;GET /api/analises/{id}" vertex="1">
+        <mxCell id="iZEVscF0YquXVBqnwBnQ-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;align=center;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Serviço de Análise&lt;/b&gt;&lt;br&gt;Spring Boot&lt;br&gt;API REST: 8082 · Actuator interno: 8182&lt;br&gt;Consome transações e aplica a regra didática&lt;br&gt;Em caso de falha: até 3 tentativas (1s e 2s)&lt;br&gt;GET /api/analises/{id}" vertex="1">
           <mxGeometry height="150" width="350" x="760" y="260" as="geometry" />
         </mxCell>
         <mxCell id="iZEVscF0YquXVBqnwBnQ-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;align=center;verticalAlign=middle;spacing=10;" value="&lt;b&gt;RabbitMQ&lt;/b&gt;&lt;br&gt;Exchange: transactions.exchange&lt;br&gt;Fila: transactions.queue&lt;br&gt;Entrega pelo menos uma vez" vertex="1">
@@ -39,6 +39,12 @@
         </mxCell>
         <mxCell id="iZEVscF0YquXVBqnwBnQ-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;dashed=1;fontSize=13;align=center;verticalAlign=middle;spacing=8;" value="&lt;b&gt;Consumidores futuros (opcional)&lt;/b&gt;&lt;br&gt;Ex.: auditoria ou relatórios&lt;br&gt;Não implementados neste projeto" vertex="1">
           <mxGeometry height="100" width="260" x="1350" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="dlq-node" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=14;align=center;verticalAlign=middle;spacing=10;" value="&lt;b&gt;DLQ · RabbitMQ&lt;/b&gt;&lt;br&gt;transactions.queue.dlq&lt;br&gt;Inspeção manual; sem reprocessamento automático" vertex="1">
+          <mxGeometry height="105" width="310" x="435" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="dlq-edge" edge="1" parent="1" source="iZEVscF0YquXVBqnwBnQ-6" target="dlq-node" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#B85450;dashed=1;fontSize=13;labelBackgroundColor=#FFFFFF;" value="Falha após tentativas&lt;br&gt;rejeita e encaminha à DLQ">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="iZEVscF0YquXVBqnwBnQ-12" edge="1" parent="1" source="iZEVscF0YquXVBqnwBnQ-2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4A6FA5;fontSize=13;labelBackgroundColor=#FFFFFF;" target="iZEVscF0YquXVBqnwBnQ-3" value="">
           <mxGeometry relative="1" as="geometry">
@@ -123,7 +129,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="iZEVscF0YquXVBqnwBnQ-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=13;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Limites de responsabilidade&lt;/b&gt;&lt;br&gt;O navegador acessa o Portal BFF; o portal não lê diretamente os bancos.&lt;br&gt;Cada microserviço acessa somente o próprio banco.&lt;br&gt;RabbitMQ distribui o trabalho; Kafka publica os resultados.&lt;br&gt;Revisão manual não substitui a análise automática." vertex="1">
-          <mxGeometry height="100" width="720" x="170" y="700" as="geometry" />
+          <mxGeometry height="100" width="720" x="170" y="920" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
