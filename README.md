@@ -52,6 +52,8 @@ flowchart LR
 
 O navegador acessa apenas o **Portal BFF**; o portal agrega as APIs dos microserviços e oferece verificações de saúde e operações guiadas de demonstração. O BFF não lê diretamente os bancos dos serviços. Cada microserviço é dono do seu banco. O Serviço de Transações grava e publica uma mensagem no RabbitMQ; o Serviço de Análise consome a fila, grava o resultado e publica `AnalysisCompleted` no tópico Kafka `analysis.completed`. O Serviço de Transações também consome esse tópico para atualizar seu estado local. RabbitMQ distribui o trabalho de análise; Kafka transporta o resultado. O consumidor RabbitMQ usa o ID da transação como chave única, então uma entrega repetida não cria outra análise nem publica outro resultado. A entrega da fila é **pelo menos uma vez**: uma mensagem pode ser recebida novamente.
 
+Em caso de falha no processamento, o Serviço de Análise faz até três tentativas, com esperas de 1 e 2 segundos. Após esgotá-las, o RabbitMQ encaminha a mensagem à DLQ para inspeção manual.
+
 Quando a análise fica `REVIEW`, o operador pode aprovar ou rejeitar pelo portal. O Serviço de Transações registra a decisão, o responsável e a justificativa separadamente do resultado automático. Ao consumir `AnalysisCompleted`, ele atualiza o status no próprio PostgreSQL.
 
 No GET de análise, o Serviço de Análise consulta o Redis; em caso de cache miss, consulta o PostgreSQL. Somente resultados encontrados são armazenados no cache, com TTL de cinco minutos; resultados ausentes não são cacheados.
@@ -239,7 +241,7 @@ Para parar os serviços:
 docker compose down
 ```
 
-Para apagar também os dados persistidos dos bancos (ação destrutiva):
+Para apagar também os volumes do projeto, incluindo dados dos bancos, mensagens do RabbitMQ e dados do Kafka (ação destrutiva):
 
 ```powershell
 docker compose down -v
@@ -268,7 +270,7 @@ Em ordem sugerida:
 1. **Garantir publicação confiável de eventos:** implementar o padrão Outbox nos pontos de publicação de `TransactionReceived` e `AnalysisCompleted`, evitando divergência entre commits nos bancos e mensagens nos brokers.
 2. **Evoluir a recuperação de falhas:** adicionar visibilidade, alertas e um procedimento de reprocessamento seguro para mensagens na DLQ.
 3. **Evoluir listagem e gráficos:** adicionar paginação e filtros no endpoint de transações; mover as agregações dos gráficos para consultas no backend para que não fiquem limitadas às 100 transações recentes.
-4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados, correlação de IDs, testes de integração e execução automatizada dos testes no pipeline.
+4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados e correlação de IDs; ampliar os testes de integração existentes e automatizar sua execução no pipeline.
 5. **Preparar para uso fora do ambiente local:** adicionar autenticação e autorização no portal e nas decisões manuais, gerir segredos fora do Compose, habilitar TLS, backups e redundância para bancos e brokers.
 
 Esses itens são propostas futuras, não recursos implementados atualmente.
