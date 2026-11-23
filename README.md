@@ -17,7 +17,6 @@ O projeto não está pronto para produção. As melhorias necessárias estão de
 - [Trade-offs](#trade-offs)
 - [ADRs](#adrs)
 - [Uso de IA](#uso-de-ia)
-- [Apresentação](#apresentacao)
 
 <a id="arquitetura"></a>
 ## 🏗️ Arquitetura
@@ -90,7 +89,8 @@ As animações abaixo demonstram as operações do portal e a página de observa
 1. [Inicie os serviços](#como-executar) e abra o [Portal](http://localhost:8080).
 2. Crie uma transação de `R$ 125,00` e acompanhe o resultado automático `APPROVED`.
 3. Crie uma transação de `R$ 1.700,00`; quando ficar `REVIEW`, aprove ou rejeite e confirme que a decisão manual não substitui o resultado automático.
-4. Abra **Observabilidade** para mostrar a saúde dos serviços, os eventos Kafka e as estatísticas do Redis.
+4. Execute o teste guiado de **idempotência** e confirme que as mensagens repetidas geram uma única análise.
+5. Abra **Observabilidade** para consultar a saúde dos serviços, os eventos Kafka e as estatísticas do Redis.
 
 ### ✅ Aprovação automática
 
@@ -298,13 +298,3 @@ O perfil de execução deste projeto é **A (com Docker)**. Os ADRs registram o 
 ## 🤖 Uso de IA
 
 Ferramentas de IA generativa, incluindo o GitHub Copilot, foram usadas como apoio ao desenvolvimento e à documentação, inclusive na evolução do painel de observabilidade. O projeto foi conferido com `mvn -B test`, execução em Docker Compose a partir de volumes vazios e testes dos fluxos de aprovação automática, revisão manual, idempotência, Kafka, Redis e saúde dos serviços. O autor é responsável por revisar e compreender o código, as decisões e os resultados antes da entrega.
-
-<a id="apresentacao"></a>
-## 🎤 Apresentação
-
-Roteiro sugerido para até 10 minutos, incluindo perguntas:
-
-1. Mostrar o fluxo e o perfil A.
-2. No portal, criar transações de resultado `APPROVED` e `REVIEW`, decidir um caso de revisão e executar o teste guiado de idempotência.
-3. Abrir **Observabilidade** pelo menu para mostrar saúde dos serviços, eventos Kafka recentes e estado do Redis; explicar os papéis distintos dos brokers e dos bancos separados.
-4. Apresentar os ADRs e explicar o uso de IA e as validações realizadas (ver [Uso de IA](#uso-de-ia)).
