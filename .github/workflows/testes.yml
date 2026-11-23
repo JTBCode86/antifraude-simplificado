@@ -59,5 +59,15 @@ jobs:
     steps:
       - name: Obter código
         uses: actions/checkout@v4
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Construir imagem
-        run: docker build -f ${{ matrix.servico }}/Dockerfile -t antifraude-${{ matrix.servico }}:ci .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.servico }}/Dockerfile
+          tags: antifraude-${{ matrix.servico }}:ci
+          load: true
+          push: false
+          cache-from: type=gha,scope=${{ matrix.servico }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.servico }}
