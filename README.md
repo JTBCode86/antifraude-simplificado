@@ -165,6 +165,8 @@ Se algum serviço ainda estiver iniciando, aguarde e consulte os logs para ident
 
 Os testes automatizados usam JUnit 5 e Mockito e cobrem os três módulos, incluindo decisões manuais, idempotência, análise, publicação de eventos e cache: a segunda leitura usa o cache e resultados inexistentes não são armazenados. O build Docker executa esses testes antes de empacotar cada serviço.
 
+O GitHub Actions executa `mvn -B test` com Java 17 em cada push e pull request, incluindo os testes de contrato. O teste opcional de integração com RabbitMQ não é executado nesse fluxo.
+
 O contrato da mensagem `TransactionReceived` é verificado nos dois serviços contra um [exemplo JSON compartilhado](docs/contracts/transaction-received.json): o produtor deve publicar os campos esperados e o consumidor deve interpretá-los corretamente. Esses testes não iniciam o RabbitMQ nem verificam a integração real entre os serviços.
 
 Para falhas no consumidor RabbitMQ, há até três tentativas, com espera de 1 e depois 2 segundos. Após esgotá-las, a mensagem é encaminhada à fila `transactions.queue.dlq`, para inspeção manual. O teste de integração opcional `RabbitRetryIntegrationTest` usa um RabbitMQ isolado e verifica a recuperação de uma falha temporária e o envio à DLQ. Ele só é executado com `RUN_RABBIT_INTEGRATION=true` e conexão RabbitMQ configurada; não use um broker com dados de produção, pois o teste esvazia suas filas de teste.
@@ -270,7 +272,7 @@ Em ordem sugerida:
 1. **Garantir publicação confiável de eventos:** implementar o padrão Outbox nos pontos de publicação de `TransactionReceived` e `AnalysisCompleted`, evitando divergência entre commits nos bancos e mensagens nos brokers.
 2. **Evoluir a recuperação de falhas:** adicionar visibilidade, alertas e um procedimento de reprocessamento seguro para mensagens na DLQ.
 3. **Evoluir listagem e gráficos:** adicionar paginação e filtros no endpoint de transações; mover as agregações dos gráficos para consultas no backend para que não fiquem limitadas às 100 transações recentes.
-4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados e correlação de IDs; ampliar os testes de integração existentes e automatizar sua execução no pipeline.
+4. **Melhorar observabilidade e validação:** incluir métricas, logs estruturados e correlação de IDs; ampliar os testes de integração e automatizá-los no pipeline.
 5. **Preparar para uso fora do ambiente local:** adicionar autenticação e autorização no portal e nas decisões manuais, gerir segredos fora do Compose, habilitar TLS, backups e redundância para bancos e brokers.
 
 Esses itens são propostas futuras, não recursos implementados atualmente.
