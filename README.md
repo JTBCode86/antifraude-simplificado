@@ -4,6 +4,8 @@
 
 Projeto didático individual para demonstrar um portal web com BFF, dois microserviços Spring Boot, bancos isolados, RabbitMQ, Kafka e Redis. A regra de análise é fictícia e serve apenas para demonstrar o fluxo; não deve ser usada para decisões financeiras reais.
 
+O projeto não está pronto para produção. As melhorias necessárias estão descritas nos [próximos passos](#proximos-passos).
+
 ## 🧭 Navegação rápida
 
 - [Arquitetura](#arquitetura)
@@ -267,6 +269,7 @@ As escolhas abaixo privilegiam um projeto didático executável localmente; elas
 | Decisão manual para análises `REVIEW` | Permite demonstrar uma revisão humana sem apagar a classificação automática. | Não há autenticação nem identidade verificada do operador; responsável e justificativa são informados pelo usuário. |
 | Docker Compose local, broker único e credenciais demonstrativas | Fácil de executar e reproduzir para a apresentação. | Não há alta disponibilidade, autenticação da API nem configuração de produção; não exponha o ambiente à internet. |
 
+<a id="proximos-passos"></a>
 ## 🛣️ Próximos passos para evolução
 
 Em ordem sugerida:
