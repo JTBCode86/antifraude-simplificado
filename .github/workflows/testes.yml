@@ -22,3 +22,42 @@ jobs:
           cache: maven
       - name: Executar testes
         run: mvn -B test
+
+  integracao-rabbitmq:
+    runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:3.13-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q check_running"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 12
+          --health-start-period 30s
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Testar retry e DLQ com RabbitMQ
+        env:
+          RUN_RABBIT_INTEGRATION: 'true'
+        run: mvn -B -pl analysis-service -Dtest=RabbitRetryIntegrationTest test
+
+  imagens-docker:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        servico: [transaction-service, analysis-service, portal-service]
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+      - name: Construir imagem
+        run: docker build -f ${{ matrix.servico }}/Dockerfile -t antifraude-${{ matrix.servico }}:ci .
