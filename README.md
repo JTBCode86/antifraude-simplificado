@@ -171,6 +171,8 @@ Os testes automatizados usam JUnit 5 e Mockito e cobrem os três módulos, inclu
 
 O GitHub Actions executa os testes com Java 17 em cada push e pull request, incluindo os testes de contrato. Em trabalhos separados, executa o teste de integração com um RabbitMQ temporário e constrói as imagens Docker dos três serviços, sem publicá-las.
 
+Os builds Docker usam cache do GitHub Actions separado por serviço. As dependências Maven são preparadas em uma camada anterior ao código para permitir seu reaproveitamento; alterações nos arquivos `pom.xml` ou a ausência do cache podem exigir novos downloads.
+
 O contrato da mensagem `TransactionReceived` é verificado nos dois serviços contra um [exemplo JSON compartilhado](docs/contracts/transaction-received.json): o produtor deve publicar os campos esperados e o consumidor deve interpretá-los corretamente. Esses testes não iniciam o RabbitMQ nem verificam a integração real entre os serviços.
 
 Para falhas no consumidor RabbitMQ, há até três tentativas, com espera de 1 e depois 2 segundos. Após esgotá-las, a mensagem é encaminhada à fila `transactions.queue.dlq`, para inspeção manual. O teste de integração opcional `RabbitRetryIntegrationTest` usa um RabbitMQ isolado e verifica a recuperação de uma falha temporária e o envio à DLQ. Ele só é executado com `RUN_RABBIT_INTEGRATION=true` e conexão RabbitMQ configurada; não use um broker com dados de produção, pois o teste esvazia suas filas de teste.
