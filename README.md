@@ -1,5 +1,7 @@
 # Antifraude simplificado
 
+[![Testes](https://github.com/JTBCode86/antifraude-simplificado/actions/workflows/testes.yml/badge.svg?branch=main)](https://github.com/JTBCode86/antifraude-simplificado/actions/workflows/testes.yml)
+
 Projeto didático individual para demonstrar um portal web com BFF, dois microserviços Spring Boot, bancos isolados, RabbitMQ, Kafka e Redis. A regra de análise é fictícia e serve apenas para demonstrar o fluxo; não deve ser usada para decisões financeiras reais.
 
 ## 🧭 Navegação rápida
